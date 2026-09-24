@@ -29,4 +29,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function canAccessHrPanel()
+    {
+        return $this->hr_panel_access === 'active';
+    }
 }
