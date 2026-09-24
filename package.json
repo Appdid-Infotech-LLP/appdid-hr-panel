@@ -15,5 +15,10 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "flatpickr": "^4.6.13",
+        "jquery": "^4.0.0",
+        "select2": "^4.1.0"
     }
 }
