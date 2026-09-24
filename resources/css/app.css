@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Appdid Technologies brand palette, sampled from the company logo. */
+    --color-brand-yellow: #f5df1a;
+    --color-brand-yellow-dark: #d9c400;
+    --color-brand-teal: #0f7a78;
+    --color-brand-teal-dark: #0b5654;
+    --color-brand-teal-light: #e6f3f2;
+    --color-brand-ink: #0c2e2d;
+}
