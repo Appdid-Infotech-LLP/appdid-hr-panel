@@ -34,9 +34,9 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'Technical Round',
                 'next_round' => 'Technical Round', 'next_round_date' => 'Sep 25, 2026', 'added_days_ago' => 6,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 19, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/abc-defg-hij', 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => 'Good communication, culture fit confirmed.'],
-                    ['type' => 'Task Round', 'date' => 'Sep 22, 2026', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => 'Submitted assignment on time, clean code.'],
-                    ['type' => 'Technical Round', 'date' => 'Sep 25, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/xyz-uvwx-rst', 'interviewer' => 'Anita Desai', 'status' => 'Scheduled', 'notes' => null],
+                    ['type' => 'HR Round', 'date' => '2026-09-19', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/abc-defg-hij', 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => 'Good communication, culture fit confirmed.'],
+                    ['type' => 'Task Round', 'date' => '2026-09-22', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => 'Submitted assignment on time, clean code.'],
+                    ['type' => 'Technical Round', 'date' => '2026-09-25', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/xyz-uvwx-rst', 'interviewer' => 'Anita Desai', 'status' => 'Scheduled', 'notes' => null],
                 ],
             ],
             2 => [
@@ -55,7 +55,7 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'HR Round',
                 'next_round' => 'HR Round', 'next_round_date' => 'Sep 25, 2026', 'added_days_ago' => 3,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 25, 2026', 'time' => '02:30 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Scheduled', 'notes' => null],
+                    ['type' => 'HR Round', 'date' => '2026-09-25', 'time' => '02:30 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Scheduled', 'notes' => null],
                 ],
             ],
             3 => [
@@ -74,8 +74,8 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'Task Round',
                 'next_round' => 'Task Round', 'next_round_date' => 'Sep 26, 2026', 'added_days_ago' => 10,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 20, 2026', 'time' => '03:00 PM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/hr-amit', 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => 'Notice period confirmed at 60 days.'],
-                    ['type' => 'Task Round', 'date' => 'Sep 26, 2026', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Pending', 'notes' => null],
+                    ['type' => 'HR Round', 'date' => '2026-09-20', 'time' => '03:00 PM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/hr-amit', 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => 'Notice period confirmed at 60 days.'],
+                    ['type' => 'Task Round', 'date' => '2026-09-26', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Pending', 'notes' => null],
                 ],
             ],
             4 => [
@@ -94,10 +94,10 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'Final Round',
                 'next_round' => 'Final Round', 'next_round_date' => 'Sep 26, 2026', 'added_days_ago' => 14,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 15, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Task Round', 'date' => 'Sep 18, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Pixel-perfect submission.'],
-                    ['type' => 'Technical Round', 'date' => 'Sep 21, 2026', 'time' => '01:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Strong fundamentals.'],
-                    ['type' => 'Final Round', 'date' => 'Sep 26, 2026', 'time' => '04:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Scheduled', 'notes' => null],
+                    ['type' => 'HR Round', 'date' => '2026-09-15', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Task Round', 'date' => '2026-09-18', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Pixel-perfect submission.'],
+                    ['type' => 'Technical Round', 'date' => '2026-09-21', 'time' => '01:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Strong fundamentals.'],
+                    ['type' => 'Final Round', 'date' => '2026-09-26', 'time' => '04:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Scheduled', 'notes' => null],
                 ],
             ],
             5 => [
@@ -116,9 +116,9 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'Technical Round',
                 'next_round' => 'Technical Round', 'next_round_date' => 'Sep 27, 2026', 'added_days_ago' => 8,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 17, 2026', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Task Round', 'date' => 'Sep 20, 2026', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Technical Round', 'date' => 'Sep 27, 2026', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/tech-farhan', 'interviewer' => 'Karan Mehta', 'status' => 'Rescheduled', 'notes' => 'Moved from Sep 24 at candidate\'s request.'],
+                    ['type' => 'HR Round', 'date' => '2026-09-17', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Task Round', 'date' => '2026-09-20', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Technical Round', 'date' => '2026-09-27', 'time' => '09:30 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/tech-farhan', 'interviewer' => 'Karan Mehta', 'status' => 'Rescheduled', 'notes' => 'Moved from Sep 24 at candidate\'s request.'],
                 ],
             ],
             6 => [
@@ -154,8 +154,8 @@ class DemoCandidates
                 'status' => 'Rejected', 'stage' => 'Task Round',
                 'next_round' => null, 'next_round_date' => null, 'added_days_ago' => 16,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 10, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Task Round', 'date' => 'Sep 13, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Below expectations on automation coverage.'],
+                    ['type' => 'HR Round', 'date' => '2026-09-10', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Task Round', 'date' => '2026-09-13', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Below expectations on automation coverage.'],
                 ],
             ],
             8 => [
@@ -191,10 +191,10 @@ class DemoCandidates
                 'status' => 'Selected', 'stage' => 'Selected',
                 'next_round' => null, 'next_round_date' => null, 'added_days_ago' => 25,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 2, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Task Round', 'date' => 'Sep 5, 2026', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Technical Round', 'date' => 'Sep 8, 2026', 'time' => '11:00 AM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
-                    ['type' => 'Final Round', 'date' => 'Sep 12, 2026', 'time' => '03:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Offer approved.'],
+                    ['type' => 'HR Round', 'date' => '2026-09-02', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Task Round', 'date' => '2026-09-05', 'time' => '11:00 AM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Technical Round', 'date' => '2026-09-08', 'time' => '11:00 AM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Anita Desai', 'status' => 'Completed', 'notes' => null],
+                    ['type' => 'Final Round', 'date' => '2026-09-12', 'time' => '03:00 PM', 'mode' => 'In Person', 'meeting_link' => null, 'interviewer' => 'Vikram Singh', 'status' => 'Completed', 'notes' => 'Offer approved.'],
                 ],
             ],
             10 => [
@@ -213,7 +213,7 @@ class DemoCandidates
                 'status' => 'Active', 'stage' => 'HR Round',
                 'next_round' => 'HR Round', 'next_round_date' => 'Sep 28, 2026', 'added_days_ago' => 4,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 28, 2026', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/hr-kavya', 'interviewer' => 'Anita Desai', 'status' => 'Scheduled', 'notes' => null],
+                    ['type' => 'HR Round', 'date' => '2026-09-28', 'time' => '10:00 AM', 'mode' => 'Virtual', 'meeting_link' => 'https://meet.google.com/hr-kavya', 'interviewer' => 'Anita Desai', 'status' => 'Scheduled', 'notes' => null],
                 ],
             ],
             11 => [
@@ -232,7 +232,7 @@ class DemoCandidates
                 'status' => 'On Hold', 'stage' => 'HR Round',
                 'next_round' => null, 'next_round_date' => null, 'added_days_ago' => 20,
                 'rounds' => [
-                    ['type' => 'HR Round', 'date' => 'Sep 5, 2026', 'time' => '04:00 PM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => 'Put on hold — budget mismatch for now.'],
+                    ['type' => 'HR Round', 'date' => '2026-09-05', 'time' => '04:00 PM', 'mode' => 'Virtual', 'meeting_link' => null, 'interviewer' => 'Karan Mehta', 'status' => 'Completed', 'notes' => 'Put on hold — budget mismatch for now.'],
                 ],
             ],
             12 => [
@@ -258,5 +258,49 @@ class DemoCandidates
     public static function find(int $id): ?array
     {
         return static::all()[$id] ?? null;
+    }
+
+    /**
+     * Every round across every candidate, flattened into one list with the
+     * owning candidate's id/name attached — used by the global Rounds list.
+     */
+    public static function allRoundsFlattened(): array
+    {
+        $rounds = [];
+
+        foreach (static::all() as $candidate) {
+            foreach ($candidate['rounds'] as $round) {
+                $rounds[] = $round + [
+                    'candidate_id' => $candidate['id'],
+                    'candidate_name' => $candidate['first_name'].' '.$candidate['last_name'],
+                ];
+            }
+        }
+
+        return $rounds;
+    }
+
+    /**
+     * A single round, identified by the candidate it belongs to and its
+     * round type (candidates only ever have one round of each type).
+     */
+    public static function findRound(int $candidateId, string $roundType): ?array
+    {
+        $candidate = static::find($candidateId);
+
+        if (! $candidate) {
+            return null;
+        }
+
+        foreach ($candidate['rounds'] as $round) {
+            if ($round['type'] === $roundType) {
+                return $round + [
+                    'candidate_id' => $candidate['id'],
+                    'candidate_name' => $candidate['first_name'].' '.$candidate['last_name'],
+                ];
+            }
+        }
+
+        return null;
     }
 }

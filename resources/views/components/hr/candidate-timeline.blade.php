@@ -88,7 +88,7 @@
 
                 @if ($round)
                     <p class="mt-0.5 text-xs text-slate-500">
-                        {{ $round['date'] }} · {{ $round['time'] }} · <x-hr.badge :status="$round['mode']" />
+                        {{ \Illuminate\Support\Carbon::parse($round['date'])->format('M j, Y') }} · {{ $round['time'] }} · <x-hr.badge :status="$round['mode']" />
                     </p>
                     @if (! empty($round['notes']))
                         <p class="mt-1 text-xs text-slate-500">{{ $round['notes'] }}</p>

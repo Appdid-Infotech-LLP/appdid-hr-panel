@@ -52,11 +52,6 @@ class Show extends Component
         // TODO: Open the Send Email modal (built in Phase 6) for this candidate.
     }
 
-    public function scheduleRound(): void
-    {
-        // TODO: Open the Schedule Round modal (built in Phase 5) for this candidate.
-    }
-
     public function downloadResume(): void
     {
         // TODO: Stream the stored resume file for download from its disk path.

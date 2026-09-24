@@ -138,9 +138,9 @@
         <div class="space-y-6">
             <x-hr.section-card title="Quick Actions">
                 <div class="space-y-2">
-                    <button type="button" wire:click="scheduleRound" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                    <a href="{{ route('hr.rounds.schedule', ['candidateId' => $candidate['id']]) }}" wire:navigate class="block w-full rounded-lg border border-slate-300 px-3.5 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">
                         Schedule Round
-                    </button>
+                    </a>
                     <button type="button" wire:click="moveToNextRound" class="w-full rounded-lg bg-brand-teal px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-teal-dark">
                         Move to Next Round
                     </button>
