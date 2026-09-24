@@ -18,7 +18,6 @@
                 <x-hr.input name="lastName" label="Last Name" required />
                 <x-hr.input name="email" type="email" label="Email" required />
                 <x-hr.input name="phone" label="Phone" required />
-                <x-hr.input name="alternatePhone" label="Alternate Phone" placeholder="Optional" />
                 <x-hr.datepicker name="dateOfBirth" label="Date of Birth" :value="$dateOfBirth" :max-date="now()->subYears(16)->format('Y-m-d')" />
                 <x-hr.select name="gender" label="Gender" :options="$this->genders()" placeholder="Select gender" />
                 <x-hr.select2 name="location" label="Current Location" :options="$this->locations()" :value="$location" placeholder="Select location" />
@@ -48,6 +47,29 @@
                     placeholder="Type to add skills" multiple tags
                 />
             </div>
+        </x-hr.section-card>
+
+        <x-hr.section-card title="Call Follow-up" subtitle="Captured after HR speaks with the candidate">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                <x-hr.datepicker name="contactedOn" label="Contacted On" :value="$contactedOn" :max-date="now()->format('Y-m-d')" />
+                <x-hr.datepicker name="expectedJoiningDate" label="Expected Joining Date (if selected)" :value="$expectedJoiningDate" />
+            </div>
+
+            <div class="mt-5">
+                <x-hr.select2
+                    name="techStack" label="Tech Stack They're Currently Working On" :options="$this->skillSuggestions()" :value="$techStack"
+                    placeholder="Type to add technologies" multiple tags
+                />
+            </div>
+
+            <div class="mt-5">
+                <x-hr.textarea name="reasonForLeaving" label="Reason for Leaving Current Organization" placeholder="What did the candidate say?" :rows="2" />
+            </div>
+
+            <label class="mt-5 flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" wire:model="agreedToBond" class="rounded border-slate-300 text-brand-teal focus:ring-brand-teal/30">
+                Candidate agreed to sign the bond
+            </label>
         </x-hr.section-card>
 
         <x-hr.section-card title="Links & Resume">

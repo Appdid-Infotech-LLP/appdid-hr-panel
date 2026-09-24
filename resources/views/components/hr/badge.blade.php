@@ -19,6 +19,8 @@
         'final round' => 'bg-brand-teal-light text-brand-teal',
         'virtual' => 'bg-slate-100 text-slate-600',
         'in person' => 'bg-slate-100 text-slate-600',
+        'yes' => 'bg-emerald-50 text-emerald-600',
+        'not yet' => 'bg-slate-100 text-slate-600',
     ];
 
     $variant = $variants[strtolower($status)] ?? 'bg-slate-100 text-slate-600';

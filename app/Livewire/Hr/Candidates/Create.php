@@ -21,8 +21,6 @@ class Create extends Component
 
     public string $phone = '';
 
-    public string $alternatePhone = '';
-
     public string $dateOfBirth = '';
 
     public string $gender = '';
@@ -50,6 +48,18 @@ class Create extends Component
 
     /** @var array<int, string> */
     public array $skills = [];
+
+    // Call follow-up details — gathered after HR speaks with the candidate
+    public string $contactedOn = '';
+
+    /** @var array<int, string> */
+    public array $techStack = [];
+
+    public bool $agreedToBond = false;
+
+    public string $expectedJoiningDate = '';
+
+    public string $reasonForLeaving = '';
 
     // Links & documents
     public string $linkedinUrl = '';
@@ -99,11 +109,6 @@ class Create extends Component
     public function removeResume(): void
     {
         $this->resume = null;
-    }
-
-    public function removeSkill(string $skill): void
-    {
-        $this->skills = array_values(array_diff($this->skills, [$skill]));
     }
 
     public function save()

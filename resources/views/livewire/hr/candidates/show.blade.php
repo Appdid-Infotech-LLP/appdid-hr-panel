@@ -63,7 +63,6 @@
                 <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                     <div><dt class="text-xs text-slate-400">Date of Birth</dt><dd class="mt-0.5 text-sm text-slate-700">{{ \Illuminate\Support\Carbon::parse($candidate['date_of_birth'])->format('M j, Y') }}</dd></div>
                     <div><dt class="text-xs text-slate-400">Gender</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['gender'] }}</dd></div>
-                    <div><dt class="text-xs text-slate-400">Alternate Phone</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['alternate_phone'] ?? '—' }}</dd></div>
                     <div><dt class="text-xs text-slate-400">Current Location</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['location'] }}</dd></div>
                     <div class="sm:col-span-2"><dt class="text-xs text-slate-400">Address</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['address'] }}</dd></div>
                 </dl>
@@ -87,6 +86,47 @@
                         @endforeach
                     </dd>
                 </div>
+            </x-hr.section-card>
+
+            <x-hr.section-card title="Call Follow-up" subtitle="Captured after HR speaks with the candidate">
+                <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-xs text-slate-400">Contacted On</dt>
+                        <dd class="mt-0.5 text-sm text-slate-700">
+                            {{ $candidate['contacted_on'] ? \Illuminate\Support\Carbon::parse($candidate['contacted_on'])->format('M j, Y') : '—' }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400">Expected Joining Date</dt>
+                        <dd class="mt-0.5 text-sm text-slate-700">
+                            {{ $candidate['expected_joining_date'] ? \Illuminate\Support\Carbon::parse($candidate['expected_joining_date'])->format('M j, Y') : '—' }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400">Agreed to Sign Bond</dt>
+                        <dd class="mt-0.5">
+                            <x-hr.badge :status="$candidate['agreed_to_bond'] ? 'Yes' : 'Not Yet'" />
+                        </dd>
+                    </div>
+                </dl>
+
+                @if ($candidate['reason_for_leaving'])
+                    <div class="mt-5">
+                        <dt class="text-xs text-slate-400">Reason for Leaving Current Organization</dt>
+                        <dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['reason_for_leaving'] }}</dd>
+                    </div>
+                @endif
+
+                @if (! empty($candidate['tech_stack']))
+                    <div class="mt-5">
+                        <dt class="text-xs text-slate-400">Tech Stack They're Currently Working On</dt>
+                        <dd class="mt-1.5 flex flex-wrap gap-1.5">
+                            @foreach ($candidate['tech_stack'] as $tech)
+                                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{{ $tech }}</span>
+                            @endforeach
+                        </dd>
+                    </div>
+                @endif
             </x-hr.section-card>
 
             <x-hr.section-card title="Links">

@@ -23,8 +23,6 @@ class Edit extends Component
 
     public string $phone = '';
 
-    public string $alternatePhone = '';
-
     public string $dateOfBirth = '';
 
     public string $gender = '';
@@ -51,6 +49,18 @@ class Edit extends Component
 
     /** @var array<int, string> */
     public array $skills = [];
+
+    // Call follow-up details — gathered after HR speaks with the candidate
+    public string $contactedOn = '';
+
+    /** @var array<int, string> */
+    public array $techStack = [];
+
+    public bool $agreedToBond = false;
+
+    public string $expectedJoiningDate = '';
+
+    public string $reasonForLeaving = '';
 
     public string $linkedinUrl = '';
 
@@ -79,7 +89,6 @@ class Edit extends Component
         $this->lastName = $data['last_name'];
         $this->email = $data['email'];
         $this->phone = $data['phone'];
-        $this->alternatePhone = (string) $data['alternate_phone'];
         $this->dateOfBirth = (string) $data['date_of_birth'];
         $this->gender = (string) $data['gender'];
         $this->location = (string) $data['location'];
@@ -93,6 +102,11 @@ class Edit extends Component
         $this->expectedSalary = (string) $data['expected_salary'];
         $this->noticePeriod = (string) $data['notice_period'];
         $this->skills = $data['skills'];
+        $this->contactedOn = (string) $data['contacted_on'];
+        $this->techStack = $data['tech_stack'];
+        $this->agreedToBond = $data['agreed_to_bond'];
+        $this->expectedJoiningDate = (string) $data['expected_joining_date'];
+        $this->reasonForLeaving = (string) $data['reason_for_leaving'];
         $this->linkedinUrl = (string) $data['linkedin_url'];
         $this->portfolioUrl = (string) $data['portfolio_url'];
         $this->existingResumeFilename = $data['resume_filename'];
@@ -142,11 +156,6 @@ class Edit extends Component
     public function removeExistingResume(): void
     {
         $this->existingResumeFilename = null;
-    }
-
-    public function removeSkill(string $skill): void
-    {
-        $this->skills = array_values(array_diff($this->skills, [$skill]));
     }
 
     public function save()

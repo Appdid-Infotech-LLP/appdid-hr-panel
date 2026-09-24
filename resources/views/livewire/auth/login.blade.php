@@ -48,9 +48,7 @@
                 </button>
             </form>
 
-            <p class="mt-6 text-center text-xs text-slate-400">
-                Authentication isn't wired up yet — see the TODO in <code class="rounded bg-slate-100 px-1 py-0.5">Login::login()</code>.
-            </p>
+           
         </div>
     </div>
 </div>
