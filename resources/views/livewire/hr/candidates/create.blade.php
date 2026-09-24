@@ -7,7 +7,10 @@
         </a>
         <div>
             <h2 class="text-xl font-semibold text-slate-900">Add New Candidate</h2>
-            <p class="text-sm text-slate-500">Enter candidate details manually. You can also add candidates by uploading a resume from the list page.</p>
+            <p class="text-sm text-slate-500">
+                Enter candidate details manually, or
+                <a href="{{ route('hr.candidates.upload') }}" wire:navigate class="font-medium text-brand-teal hover:text-brand-teal-dark">upload a resume instead</a>.
+            </p>
         </div>
     </div>
 
@@ -87,7 +90,10 @@
                     <p class="mt-1.5 text-sm text-red-500">{{ $message }}</p>
                 @enderror
 
-                <p class="mt-1.5 text-xs text-slate-400">This is a basic upload for now — Phase 4 replaces it with the full drag-and-drop resume upload experience.</p>
+                <p class="mt-1.5 text-xs text-slate-400">
+                    This is a basic upload for attaching a resume here. For the full drag-and-drop upload flow, see
+                    <a href="{{ route('hr.candidates.upload') }}" wire:navigate class="text-brand-teal hover:text-brand-teal-dark">Upload Resume</a>.
+                </p>
             </div>
         </x-hr.section-card>
 
