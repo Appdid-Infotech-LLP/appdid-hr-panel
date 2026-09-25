@@ -33,15 +33,31 @@
 
         <x-hr.section-card title="Professional Details">
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-                <x-hr.select name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" placeholder="Select qualification" />
+                <div>
+                    <x-hr.select name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" placeholder="Select qualification" />
+
+                    @if ($highestQualification === 'Other')
+                        <div class="mt-2">
+                            <x-hr.input name="highestQualificationOther" placeholder="Enter qualification" />
+                        </div>
+                    @endif
+                </div>
                 <x-hr.input name="college" label="College / University" placeholder="RV College of Engineering" />
-                <x-hr.input name="experienceYears" type="number" label="Years of Experience" placeholder="e.g. 3.5" />
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Experience</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <x-hr.input name="experienceYears" type="number" min="0" placeholder="0" />
+                            <p class="mt-1 text-xs text-slate-400">Years</p>
+                        </div>
+                        <div>
+                            <x-hr.input name="experienceMonths" type="number" min="0" max="11" placeholder="0" />
+                            <p class="mt-1 text-xs text-slate-400">Months</p>
+                        </div>
+                    </div>
+                </div>
                 <x-hr.input name="currentCompany" label="Current Company" placeholder="TechNova Solutions" />
                 <x-hr.input name="currentDesignation" label="Current Designation" placeholder="Senior Frontend Developer" />
-                <div></div>
-                <x-hr.input name="currentSalary" label="Current Salary (₹ per annum)" placeholder="e.g. 14,00,000" />
-                <x-hr.input name="expectedSalary" label="Expected Salary (₹ per annum)" placeholder="e.g. 20,00,000" />
-                <x-hr.select name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" placeholder="Select notice period" />
             </div>
 
             <div class="mt-5">
@@ -74,6 +90,14 @@
                 <input type="checkbox" wire:model="agreedToBond" class="rounded border-slate-300 text-brand-teal focus:ring-brand-teal/30">
                 Candidate agreed to sign the bond
             </label>
+        </x-hr.section-card>
+
+        <x-hr.section-card title="Compensation & Notice Period">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                <x-hr.input name="currentSalary" label="Current Salary (₹ per annum)" placeholder="e.g. 14,00,000" />
+                <x-hr.input name="expectedSalary" label="Expected Salary (₹ per annum)" placeholder="e.g. 20,00,000" />
+                <x-hr.select name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" placeholder="Select notice period" />
+            </div>
         </x-hr.section-card>
 
         <x-hr.section-card title="Links & Resume">

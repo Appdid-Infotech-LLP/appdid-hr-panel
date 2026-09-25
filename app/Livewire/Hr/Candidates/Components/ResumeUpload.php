@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Hr\Candidates\Components;
 
+use App\Services\ResumeParser;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -19,7 +20,7 @@ class ResumeUpload extends Component
      */
     protected function rules(): array
     {
-        return [];
+        return ['resume' => 'required|file|mimes:pdf,doc,docx|max:5120'];
     }
 
     public function removeResume(): void
@@ -29,19 +30,22 @@ class ResumeUpload extends Component
 
     public function processResume()
     {
-        /*
-         * TODO — YOUR IMPLEMENTATION
-         *
-         * 1. Validate the upload: $this->validate();
-         * 2. Store the file: $path = $this->resume->store('resumes', 'public');
-         * 3. (Optional) Parse the resume to prefill fields — pick a parsing
-         *    package or an AI service; this is intentionally not chosen for you.
-         * 4. Either create the candidate directly, or redirect to the manual
-         *    Create form with the extracted fields prefilled so HR can review
-         *    them before saving.
-         * 5. Log a candidate_activities entry ("Candidate added via resume upload").
-         * 6. Flash a success message and redirect to the candidate list or profile.
-         */
+        $this->validate();
+
+        try {
+            $parsed = app(ResumeParser::class)->parse($this->resume);
+        } catch (\Throwable $e) {
+            \Log::error('Resume parsing failed: ' . $e->getMessage());
+            $parsed = [];
+        }
+
+       
+        session(['pending_resume' => [
+            'filename' => $this->resume->getFilename(),
+            'data' => $parsed,
+        ]]);
+
+        return redirect()->route('hr.candidates.create');
     }
 
     public function render()

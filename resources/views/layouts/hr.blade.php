@@ -25,6 +25,18 @@
             <x-hr.header :title="$title ?? 'Dashboard'" />
 
             <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                @if (session('success'))
+                    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('warning'))
+                    <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                        {{ session('warning') }}
+                    </div>
+                @endif
+
                 {{ $slot }}
             </main>
         </div>
