@@ -41,10 +41,12 @@
             </div>
 
             <div class="flex shrink-0 flex-wrap items-center gap-2">
-                <button type="button" wire:click="downloadResume" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 12m0 0 4.5-4.5M12 12V3" /></svg>
-                    Resume
-                </button>
+                @if ($candidate['resume_path'])
+                    <a href="{{ $candidate['resume_path'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 12m0 0 4.5-4.5M12 12V3" /></svg>
+                        Resume
+                    </a>
+                @endif
                 <a href="{{ route('hr.candidates.edit', $candidate['id']) }}" wire:navigate class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
                     Edit
@@ -61,7 +63,7 @@
         <div class="space-y-6 lg:col-span-2">
             <x-hr.section-card title="Personal Information">
                 <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                    <div><dt class="text-xs text-slate-400">Date of Birth</dt><dd class="mt-0.5 text-sm text-slate-700">{{ \Illuminate\Support\Carbon::parse($candidate['date_of_birth'])->format('M j, Y') }}</dd></div>
+                    <div><dt class="text-xs text-slate-400">Date of Birth</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['date_of_birth'] ? \Illuminate\Support\Carbon::parse($candidate['date_of_birth'])->format('M j, Y') : '—' }}</dd></div>
                     <div><dt class="text-xs text-slate-400">Gender</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['gender'] }}</dd></div>
                     <div><dt class="text-xs text-slate-400">Current Location</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['location'] }}</dd></div>
                     <div class="sm:col-span-2"><dt class="text-xs text-slate-400">Address</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['address'] }}</dd></div>
@@ -75,7 +77,7 @@
                     <div><dt class="text-xs text-slate-400">Experience</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['experience_years'] }} years</dd></div>
                     <div><dt class="text-xs text-slate-400">Notice Period</dt><dd class="mt-0.5 text-sm text-slate-700">{{ $candidate['notice_period'] }}</dd></div>
                     <div><dt class="text-xs text-slate-400">Current Salary</dt><dd class="mt-0.5 text-sm text-slate-700">₹{{ $candidate['current_salary'] ?? '—' }}</dd></div>
-                    <div><dt class="text-xs text-slate-400">Expected Salary</dt><dd class="mt-0.5 text-sm text-slate-700">₹{{ $candidate['expected_salary'] }}</dd></div>
+                    <div><dt class="text-xs text-slate-400">Expected Salary</dt><dd class="mt-0.5 text-sm text-slate-700">₹{{ $candidate['expected_salary'] ?? '—' }}</dd></div>
                 </dl>
 
                 <div class="mt-5">
@@ -155,17 +157,19 @@
             </x-hr.section-card>
 
             <x-hr.section-card title="Resume">
-                <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                    <div class="flex items-center gap-3 text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                        </svg>
-                        <span class="font-medium text-slate-700">{{ $candidate['resume_filename'] }}</span>
-                        <span class="text-slate-400">({{ $candidate['resume_size_kb'] }} KB)</span>
+                @if ($candidate['resume_path'])
+                    <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="flex min-w-0 items-center gap-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+                            <span class="truncate font-medium text-slate-700">{{ basename(parse_url($candidate['resume_path'], PHP_URL_PATH)) }}</span>
+                        </div>
+                        <a href="{{ $candidate['resume_path'] }}" target="_blank" rel="noopener" class="shrink-0 text-sm font-medium text-brand-teal hover:text-brand-teal-dark">Download</a>
                     </div>
-                    <button type="button" wire:click="downloadResume" class="text-sm font-medium text-brand-teal hover:text-brand-teal-dark">Download</button>
-                </div>
-                <p class="mt-2 text-xs text-slate-400">Preview isn't wired up yet — this button just needs a working download route.</p>
+                @else
+                    <p class="text-sm text-slate-400">No resume on file.</p>
+                @endif
             </x-hr.section-card>
 
             @if ($candidate['notes'])
