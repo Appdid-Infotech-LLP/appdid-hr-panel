@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Hr\Candidates;
 
+use App\Models\Candidate;
 use App\Support\CandidateOptions;
-use App\Support\DemoCandidates;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -34,9 +33,9 @@ class Index extends Component
     #[Url]
     public string $dateFilter = '';
 
-    public string $sortField = 'added_days_ago';
+    public string $sortField = 'created_at';
 
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     public int $perPage = 8;
 
@@ -111,36 +110,21 @@ class Index extends Component
             || $this->dateFilter !== '';
     }
 
-    /**
-     * Filtering/sorting the in-memory demo array here is just UI plumbing
-     * (so the search box and dropdowns feel alive) — it's not recruitment
-     * business logic, so it's safe to leave in place.
-     *
-     * TODO — YOUR IMPLEMENTATION
-     * Once the Candidate model exists, replace this whole method with a
-     * query, e.g.:
-     *   Candidate::query()
-     *       ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
-     *           ->where('first_name', 'like', "%{$this->search}%")
-     *           ->orWhere('email', 'like', "%{$this->search}%")))
-     *       ->when($this->stageFilter, fn ($q) => $q->where('current_stage', $this->stageFilter))
-     *       ->orderBy($this->sortField, $this->sortDirection)
-     *       ->paginate($this->perPage);
-     */
-    protected function filteredCandidates(): Collection
+    protected function filteredCandidatesQuery(): Builder
     {
-        $search = trim(mb_strtolower($this->search));
+        $search = trim($this->search);
 
-        return collect(DemoCandidates::all())
-            ->when($search !== '', fn (Collection $rows) => $rows->filter(function (array $row) use ($search) {
-                $haystack = mb_strtolower($row['first_name'].' '.$row['last_name'].' '.$row['email'].' '.$row['phone']);
-
-                return str_contains($haystack, $search);
+        return Candidate::query()
+            ->when($search !== '', fn (Builder $q) => $q->where(function (Builder $q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             }))
-            ->when($this->stageFilter !== '', fn (Collection $rows) => $rows->where('stage', $this->stageFilter))
-            ->when($this->statusFilter !== '', fn (Collection $rows) => $rows->where('status', $this->statusFilter))
-            ->when($this->locationFilter !== '', fn (Collection $rows) => $rows->where('location', $this->locationFilter))
-            ->when($this->experienceFilter !== '', function (Collection $rows) {
+            ->when($this->stageFilter !== '', fn (Builder $q) => $q->where('current_stage', $this->stageFilter))
+            ->when($this->statusFilter !== '', fn (Builder $q) => $q->where('status', $this->statusFilter))
+            ->when($this->locationFilter !== '', fn (Builder $q) => $q->where('location', $this->locationFilter))
+            ->when($this->experienceFilter !== '', function (Builder $q) {
                 [$min, $max] = match ($this->experienceFilter) {
                     '0-2' => [0, 2],
                     '2-5' => [2, 5],
@@ -149,24 +133,9 @@ class Index extends Component
                     default => [0, PHP_INT_MAX],
                 };
 
-                return $rows->whereBetween('experience_years', [$min, $max]);
+                $q->whereBetween('experience_years', [$min, $max]);
             })
-            ->when($this->dateFilter !== '', fn (Collection $rows) => $rows->where('added_days_ago', '<=', (int) $this->dateFilter))
-            ->sortBy($this->sortField, SORT_REGULAR, $this->sortDirection === 'desc')
-            ->values();
-    }
-
-    protected function paginate(Collection $items): LengthAwarePaginator
-    {
-        $page = $this->getPage();
-
-        return new LengthAwarePaginator(
-            $items->forPage($page, $this->perPage)->values(),
-            $items->count(),
-            $this->perPage,
-            $page,
-            ['path' => request()->url(), 'pageName' => 'page'],
-        );
+            ->when($this->dateFilter !== '', fn (Builder $q) => $q->where('created_at', '>=', now()->subDays((int) $this->dateFilter)));
     }
 
     // Row actions — UI placeholders only, per the project's "don't build
@@ -199,8 +168,10 @@ class Index extends Component
     public function render()
     {
         return view('livewire.hr.candidates.index', [
-            'candidates' => $this->paginate($this->filteredCandidates()),
-            'totalCount' => count(DemoCandidates::all()),
+            'candidates' => $this->filteredCandidatesQuery()
+                ->orderBy($this->sortField, $this->sortDirection)
+                ->paginate($this->perPage),
+            'totalCount' => Candidate::count(),
         ]);
     }
 }
