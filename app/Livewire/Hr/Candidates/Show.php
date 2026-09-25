@@ -43,7 +43,7 @@ class Show extends Component
             'notes' => $c->notes,
             'status' => $c->status,
             'stage' => $c->current_stage,
-           
+
             'rounds' => [],
         ];
     }
@@ -73,7 +73,7 @@ class Show extends Component
 
     public function sendEmail(): void
     {
-        // TODO: Open the Send Email modal (built in Phase 6) for this candidate.
+        $this->dispatch('open-send-email-modal', candidateId: $this->candidate['id']);
     }
 
     public function downloadResume(): void

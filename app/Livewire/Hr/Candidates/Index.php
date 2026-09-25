@@ -162,7 +162,7 @@ class Index extends Component
 
     public function sendEmail(int $candidateId): void
     {
-        // TODO: Open the Send Email modal (built in Phase 6) for this candidate.
+        $this->dispatch('open-send-email-modal', candidateId: $candidateId);
     }
 
     public function render()

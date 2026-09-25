@@ -42,6 +42,8 @@
         </div>
     </div>
 
+    <livewire:hr.emails.send-candidate-email />
+
     @livewireScripts
 </body>
 </html>
