@@ -2,8 +2,12 @@
 
 namespace App\Livewire\Hr\Rounds;
 
+use App\Enums\RoundType;
+use App\Models\Candidate;
+use App\Models\CandidateRound;
 use App\Support\DemoCandidates;
 use App\Support\RoundOptions;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -30,9 +34,9 @@ class Schedule extends Component
 
     public function candidates(): array
     {
-        return collect(DemoCandidates::all())
-            ->mapWithKeys(fn ($candidate) => [
-                $candidate['id'] => $candidate['first_name'].' '.$candidate['last_name'].' — '.($candidate['current_designation'] ?? 'Candidate'),
+        return Candidate::all()
+            ->mapWithKeys(fn($candidate) => [
+                $candidate['id'] => $candidate['first_name'] . ' ' . $candidate['last_name'] . ' — ' . ($candidate['current_designation'] ?? 'Candidate'),
             ])
             ->all();
     }
@@ -51,31 +55,54 @@ class Schedule extends Component
     {
         $candidate = $this->candidateId ? DemoCandidates::find($this->candidateId) : null;
 
-        return $candidate ? $candidate['first_name'].' '.$candidate['last_name'] : null;
+        return $candidate ? $candidate['first_name'] . ' ' . $candidate['last_name'] : null;
     }
 
-    /**
-     * TODO — YOUR IMPLEMENTATION
-     */
     protected function rules(): array
     {
-        return [];
+        return [
+            'candidateId' => 'required|exists:candidates,id',
+            'roundType' => ['required', Rule::enum(RoundType::class)],
+            'date' => ['required', 'date_format:Y-m-d'],
+            'time' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) {
+                    $alreadyBooked = CandidateRound::where('candidate_id', $this->candidateId)
+                        ->where('schedule_at', "{$this->date} {$value}:00")
+                        ->exists();
+
+                    if ($alreadyBooked) {
+                        $fail('This candidate already has a round scheduled at this date and time.');
+                    }
+                },
+            ],
+            'meetingLink' => ['required_if:mode,Virtual', 'url'],
+            'interviewer' => ['required', Rule::in(array_keys(RoundOptions::interviewers()))],
+        ];
     }
 
     public function scheduleRound()
     {
-        /*
-         * TODO — YOUR IMPLEMENTATION
-         *
-         * 1. Validate the form: $this->validate();
-         * 2. Find the candidate.
-         * 3. Create the recruitment round.
-         * 4. Create Google Calendar event.
-         * 5. Save calendar event ID.
-         * 6. Send candidate email.
-         * 7. Reset the form.
-         * 8. Show success message.
-         */
+        $this->validate();
+
+        $candidate = Candidate::findOrFail($this->candidateId);
+
+        [$interviewerType, $interviewerId] = explode(':', $this->interviewer, 2);
+
+        $candidate->rounds()->create([
+            'type' => $this->roundType,
+            'schedule_at' => "{$this->date} {$this->time}:00",
+            'mode' => $this->mode,
+            'meeting_link' => $this->meetingLink,
+            'interviewer_type' => $interviewerType,
+            'interviewer_id' => $interviewerId,
+            'notes' => $this->notes,
+        ]);
+
+        session()->flash('success', 'Round scheduled successfully.');
+
+        return redirect()->route('hr.rounds.index');
     }
 
     public function render()

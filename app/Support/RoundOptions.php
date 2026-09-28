@@ -2,6 +2,10 @@
 
 namespace App\Support;
 
+use App\Enums\RoundType;
+use App\Models\Admin;
+use App\Models\User;
+
 /**
  * Shared dropdown option lists for round scheduling/editing, kept separate
  * from CandidateOptions since these describe rounds, not candidates.
@@ -10,12 +14,7 @@ class RoundOptions
 {
     public static function types(): array
     {
-        return [
-            'HR Round' => 'HR Round',
-            'Task Round' => 'Task Round',
-            'Technical Round' => 'Technical Round',
-            'Final Round' => 'Final Round',
-        ];
+        return RoundType::options();
     }
 
     public static function statuses(): array
@@ -38,10 +37,16 @@ class RoundOptions
         ];
     }
 
+
     public static function interviewers(): array
     {
-        $names = ['Anita Desai', 'Karan Mehta', 'Vikram Singh'];
+        $admins = Admin::get(['id', 'name'])
+            ->mapWithKeys(fn(Admin $admin) => ["admin:{$admin->id}" => "{$admin->name} (Admin)"]);
 
-        return array_combine($names, $names);
+        $users = User::where('status', 'active')
+            ->get(['id', 'name'])
+            ->mapWithKeys(fn(User $user) => ["user:{$user->id}" => "{$user->name}"]);
+
+        return $admins->merge($users)->all();
     }
 }

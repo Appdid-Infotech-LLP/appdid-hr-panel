@@ -46,4 +46,10 @@ class Candidate extends Model
         'expected_joining_date' => 'date',
         'experience_years' => 'decimal:1',
     ];
+
+
+    public function rounds()
+    {
+        return $this->hasMany(CandidateRound::class);
+    }
 }
