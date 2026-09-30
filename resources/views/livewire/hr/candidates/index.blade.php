@@ -29,7 +29,7 @@
 
     {{-- Filters --}}
     <div class="rounded-xl border border-slate-200 bg-white p-4">
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div class="lg:col-span-2">
                 <div class="relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -45,13 +45,6 @@
             <select wire:model.live="stageFilter" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
                 <option value="">All Stages</option>
                 @foreach ($this->stages() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
-
-            <select wire:model.live="statusFilter" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Statuses</option>
-                @foreach ($this->statuses() as $value => $label)
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>
@@ -116,7 +109,6 @@
                                 <button type="button" wire:click="sortBy('experience_years')" class="flex items-center gap-1 hover:text-slate-700">Experience {{ $sortIcon('experience_years') }}</button>
                             </th>
                             <th class="px-5 py-3 font-medium">Stage</th>
-                            <th class="px-5 py-3 font-medium">Status</th>
                             <th class="px-5 py-3 font-medium">Next Round</th>
                             <th class="px-5 py-3 text-right font-medium">Actions</th>
                         </tr>
@@ -137,7 +129,6 @@
                                 <td class="px-5 py-3 text-slate-600">{{ $candidate['current_company'] ?? '—' }}</td>
                                 <td class="px-5 py-3 text-slate-600">{{ $candidate['experience_years'] }} yrs</td>
                                 <td class="px-5 py-3"><x-hr.badge :status="$candidate['stage']" /></td>
-                                <td class="px-5 py-3"><x-hr.badge :status="$candidate['status']" /></td>
                                 <td class="px-5 py-3 text-slate-600">
                                     @if ($candidate['next_round'])
                                         {{ $candidate['next_round'] }}
@@ -167,7 +158,6 @@
 
                                             <div class="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
                                                 <button type="button" wire:click="scheduleRound({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Schedule Round</button>
-                                                <button type="button" wire:click="moveToNextRound({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Move to Next Round</button>
                                                 <button type="button" wire:click="sendEmail({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Send Email</button>
                                                 <button
                                                     type="button" wire:click="reject({{ $candidate['id'] }})"

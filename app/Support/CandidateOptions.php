@@ -92,13 +92,4 @@ class CandidateOptions
         ];
     }
 
-    public static function statuses(): array
-    {
-        return [
-            'Active' => 'Active',
-            'On Hold' => 'On Hold',
-            'Selected' => 'Selected',
-            'Rejected' => 'Rejected',
-        ];
-    }
 }

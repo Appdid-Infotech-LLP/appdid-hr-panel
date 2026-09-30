@@ -27,7 +27,6 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 class="text-lg font-semibold text-slate-900">{{ $fullName }}</h3>
                         <x-hr.badge :status="$candidate['stage']" />
-                        <x-hr.badge :status="$candidate['status']" />
                     </div>
                     <p class="mt-1 text-sm text-slate-500">{{ $candidate['current_designation'] }} @if ($candidate['current_company'])
                             · {{ $candidate['current_company'] }}
@@ -251,7 +250,7 @@
 
         <div class="space-y-6">
             <x-hr.section-card title="Quick Actions">
-                @php $isConcluded = in_array($candidate['status'], ['Selected', 'Rejected'], true); @endphp
+                @php $isConcluded = in_array($candidate['stage'], ['Selected', 'Rejected'], true); @endphp
                 <div class="space-y-2">
                     @if ($isConcluded)
                         <span
@@ -279,7 +278,7 @@
             </x-hr.section-card>
 
             <x-hr.section-card title="Recruitment Timeline">
-                <x-hr.candidate-timeline :status="$candidate['status']" :rounds="$candidate['rounds']" />
+                <x-hr.candidate-timeline :stage="$candidate['stage']" :rounds="$candidate['rounds']" />
             </x-hr.section-card>
         </div>
     </div>

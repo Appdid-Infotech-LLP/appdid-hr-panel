@@ -92,10 +92,10 @@ class ListRounds extends Component
         $roundTypes = array_map(fn(RoundType $type): string => $type->value, RoundType::cases());
         $cases = [
             'WHEN candidate_rounds.status IS NOT NULL THEN candidate_rounds.status',
-            'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
-            'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
+            'WHEN candidates.current_stage = ? THEN ?',
+            'WHEN candidates.current_stage = ? THEN ?',
         ];
-        $bindings = ['Rejected', 'Rejected', 'Cancelled', 'Selected', 'Selected', 'Completed'];
+        $bindings = ['Rejected', 'Cancelled', 'Selected', 'Completed'];
 
         foreach ($roundTypes as $stageIndex => $stage) {
             $cases[] = 'WHEN candidates.current_stage = ? AND candidate_rounds.type = ? THEN ?';
@@ -234,11 +234,11 @@ class ListRounds extends Component
 
         $candidate = $round->candidate;
 
-        if ($candidate->status === 'Rejected' || $candidate->current_stage === 'Rejected') {
+        if ($candidate->current_stage === 'Rejected') {
             return 'Cancelled';
         }
 
-        if ($candidate->status === 'Selected' || $candidate->current_stage === 'Selected') {
+        if ($candidate->current_stage === 'Selected') {
             return 'Completed';
         }
 

@@ -1,8 +1,8 @@
-@props(['status', 'rounds' => []])
+@props(['stage', 'rounds' => []])
 
 @php
     $roundTypes = array_column(\App\Enums\RoundType::cases(), 'value');
-    $isConcluded = in_array($status, ['Selected', 'Rejected'], true);
+    $isConcluded = in_array($stage, ['Selected', 'Rejected'], true);
     $roundsByType = collect($rounds)->groupBy('type');
 
     $nodes = [
@@ -65,12 +65,12 @@
 
     $nodes[] = [
         'key' => 'Outcome',
-        'label' => match ($status) {
+        'label' => match ($stage) {
             'Selected' => 'Selected',
             'Rejected' => 'Rejected',
             default => 'Selected / Rejected',
         },
-        'state' => match ($status) {
+        'state' => match ($stage) {
             'Selected' => 'completed',
             'Rejected' => 'rejected',
             default => 'upcoming',

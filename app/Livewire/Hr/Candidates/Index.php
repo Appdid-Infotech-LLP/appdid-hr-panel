@@ -22,9 +22,6 @@ class Index extends Component
     public string $stageFilter = '';
 
     #[Url]
-    public string $statusFilter = '';
-
-    #[Url]
     public string $experienceFilter = '';
 
     #[Url]
@@ -45,11 +42,6 @@ class Index extends Component
     }
 
     public function updatingStageFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingStatusFilter(): void
     {
         $this->resetPage();
     }
@@ -81,18 +73,13 @@ class Index extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'stageFilter', 'statusFilter', 'experienceFilter', 'locationFilter', 'dateFilter']);
+        $this->reset(['search', 'stageFilter', 'experienceFilter', 'locationFilter', 'dateFilter']);
         $this->resetPage();
     }
 
     public function stages(): array
     {
         return CandidateOptions::stages();
-    }
-
-    public function statuses(): array
-    {
-        return CandidateOptions::statuses();
     }
 
     public function locations(): array
@@ -104,7 +91,6 @@ class Index extends Component
     {
         return $this->search !== ''
             || $this->stageFilter !== ''
-            || $this->statusFilter !== ''
             || $this->experienceFilter !== ''
             || $this->locationFilter !== ''
             || $this->dateFilter !== '';
@@ -122,7 +108,6 @@ class Index extends Component
                     ->orWhere('phone', 'like', "%{$search}%");
             }))
             ->when($this->stageFilter !== '', fn (Builder $q) => $q->where('current_stage', $this->stageFilter))
-            ->when($this->statusFilter !== '', fn (Builder $q) => $q->where('status', $this->statusFilter))
             ->when($this->locationFilter !== '', fn (Builder $q) => $q->where('location', $this->locationFilter))
             ->when($this->experienceFilter !== '', function (Builder $q) {
                 [$min, $max] = match ($this->experienceFilter) {
@@ -145,18 +130,10 @@ class Index extends Component
         // TODO: Open the Schedule Round modal (built in Phase 5) for this candidate.
     }
 
-    public function moveToNextRound(int $candidateId): void
-    {
-        // TODO:
-        // 1. Determine the candidate's next stage.
-        // 2. Update current_stage in the database.
-        // 3. Log a candidate_activities entry.
-    }
-
     public function reject(int $candidateId): void
     {
         // TODO:
-        // 1. Update the candidate's status to "Rejected".
+        // 1. Update the candidate's current_stage to "Rejected".
         // 2. Log a candidate_activities entry.
     }
 

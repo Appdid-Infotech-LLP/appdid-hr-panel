@@ -32,7 +32,6 @@ class Candidate extends Model
         'linkedin_url',
         'portfolio_url',
         'resume_path',
-        'status',
         'current_stage',
         'notes',
     ];

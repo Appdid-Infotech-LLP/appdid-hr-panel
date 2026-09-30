@@ -55,7 +55,6 @@ class Show extends Component
             'portfolio_url' => $c->portfolio_url,
             'resume_path' => $c->resume_path,
             'notes' => $c->notes,
-            'status' => $c->status,
             'stage' => $c->current_stage,
 
             'rounds' => $rounds,
@@ -66,15 +65,6 @@ class Show extends Component
     {
         return view('livewire.hr.candidates.show')
             ->layout('layouts.hr', ['title' => $this->candidate['first_name'].' '.$this->candidate['last_name']]);
-    }
-
-    public function moveToNextRound(): void
-    {
-        // TODO:
-        // 1. Determine the next stage after $this->candidate['stage'].
-        // 2. Update the candidate's current_stage in the database.
-        // 3. Log a candidate_activities entry.
-        // 4. Optionally open the Schedule Round modal for the new stage.
     }
 
     public function markAsSelected(): void
@@ -90,11 +80,9 @@ class Show extends Component
     protected function concludeAs(string $outcome): void
     {
         Candidate::whereKey($this->candidate['id'])->update([
-            'status' => $outcome,
             'current_stage' => $outcome,
         ]);
 
-        $this->candidate['status'] = $outcome;
         $this->candidate['stage'] = $outcome;
 
         session()->flash('success', trim($this->candidate['first_name'].' '.$this->candidate['last_name'])." was marked as {$outcome}.");

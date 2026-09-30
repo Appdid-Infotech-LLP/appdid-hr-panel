@@ -65,7 +65,7 @@ class Schedule extends Component
                 'required',
                 'exists:candidates,id',
                 function ($attribute, $value, $fail) {
-                    if (Candidate::whereKey($value)->whereIn('status', ['Selected', 'Rejected'])->exists()) {
+                    if (Candidate::whereKey($value)->whereIn('current_stage', ['Selected', 'Rejected'])->exists()) {
                         $fail('This candidate has already been marked Selected/Rejected and can no longer have rounds scheduled.');
                     }
                 },
