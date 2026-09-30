@@ -61,7 +61,15 @@ class Schedule extends Component
     protected function rules(): array
     {
         return [
-            'candidateId' => 'required|exists:candidates,id',
+            'candidateId' => [
+                'required',
+                'exists:candidates,id',
+                function ($attribute, $value, $fail) {
+                    if (Candidate::whereKey($value)->whereIn('status', ['Selected', 'Rejected'])->exists()) {
+                        $fail('This candidate has already been marked Selected/Rejected and can no longer have rounds scheduled.');
+                    }
+                },
+            ],
             'roundType' => ['required', Rule::enum(RoundType::class)],
             'date' => ['required', 'date_format:Y-m-d'],
             'time' => [

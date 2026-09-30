@@ -11,7 +11,21 @@ class Show extends Component
 
     public function mount(int $candidateId): void
     {
-        $c = Candidate::findOrFail($candidateId);
+        $c = Candidate::with('rounds.interviewer')->findOrFail($candidateId);
+
+        $rounds = $c->rounds
+            ->sortBy('schedule_at')
+            ->map(fn ($round) => [
+                'type' => $round->type,
+                'date' => $round->schedule_at->format('Y-m-d'),
+                'time' => $round->schedule_at->format('h:i A'),
+                'mode' => $round->mode,
+                'meeting_link' => $round->meeting_link,
+                'interviewer' => $round->interviewer?->name,
+                'notes' => $round->notes,
+            ])
+            ->values()
+            ->all();
 
         $this->candidate = [
             'id' => $c->id,
@@ -44,7 +58,7 @@ class Show extends Component
             'status' => $c->status,
             'stage' => $c->current_stage,
 
-            'rounds' => [],
+            'rounds' => $rounds,
         ];
     }
 
@@ -63,12 +77,27 @@ class Show extends Component
         // 4. Optionally open the Schedule Round modal for the new stage.
     }
 
+    public function markAsSelected(): void
+    {
+        $this->concludeAs('Selected');
+    }
+
     public function reject(): void
     {
-        // TODO:
-        // 1. Update the candidate's status to "Rejected" in the database.
-        // 2. Log a candidate_activities entry.
-        // 3. Optionally open the Send Email modal with a rejection template.
+        $this->concludeAs('Rejected');
+    }
+
+    protected function concludeAs(string $outcome): void
+    {
+        Candidate::whereKey($this->candidate['id'])->update([
+            'status' => $outcome,
+            'current_stage' => $outcome,
+        ]);
+
+        $this->candidate['status'] = $outcome;
+        $this->candidate['stage'] = $outcome;
+
+        session()->flash('success', trim($this->candidate['first_name'].' '.$this->candidate['last_name'])." was marked as {$outcome}.");
     }
 
     public function sendEmail(): void
