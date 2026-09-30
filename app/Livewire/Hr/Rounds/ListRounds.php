@@ -7,6 +7,7 @@ use App\Models\CandidateRound;
 use App\Support\RoundOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -33,6 +34,20 @@ class ListRounds extends Component
     public string $sortDirection = 'asc';
 
     public int $perPage = 10;
+
+    public bool $showRoundConfirmation = false;
+
+    #[Locked]
+    public ?int $pendingRoundId = null;
+
+    #[Locked]
+    public string $pendingRoundAction = '';
+
+    #[Locked]
+    public string $pendingCandidateName = '';
+
+    #[Locked]
+    public string $pendingRoundType = '';
 
     protected function roundsQuery(): Builder
     {
@@ -74,8 +89,9 @@ class ListRounds extends Component
      */
     protected function statusExpression(): array
     {
-        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
+        $roundTypes = array_map(fn(RoundType $type): string => $type->value, RoundType::cases());
         $cases = [
+            'WHEN candidate_rounds.status IS NOT NULL THEN candidate_rounds.status',
             'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
             'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
         ];
@@ -91,7 +107,7 @@ class ListRounds extends Component
             }
         }
 
-        return ['CASE '.implode(' ', $cases).' ELSE ? END', [...$bindings, 'Pending']];
+        return ['CASE ' . implode(' ', $cases) . ' ELSE ? END', [...$bindings, 'Pending']];
     }
 
     public function updatingSearch(): void
@@ -146,10 +162,7 @@ class ListRounds extends Component
 
     public function statuses(): array
     {
-        return array_intersect_key(
-            RoundOptions::statuses(),
-            array_flip(['Pending', 'Scheduled', 'Completed', 'Cancelled']),
-        );
+        return RoundOptions::statuses();
     }
 
     public function modes(): array
@@ -157,15 +170,91 @@ class ListRounds extends Component
         return RoundOptions::modes();
     }
 
-    // Row actions — UI placeholders only.
-    public function markCompleted(int $candidateId, string $roundType): void
+    public function openRoundConfirmation(int $roundId, string $action): void
     {
-        // TODO: Update this round's status to "Completed" and log an activity.
+        abort_unless(in_array($action, ['complete', 'cancel'], true), 404);
+
+        $round = CandidateRound::with('candidate')->findOrFail($roundId);
+
+        if (in_array($this->effectiveRoundStatus($round), ['Completed', 'Cancelled'], true)) {
+            return;
+        }
+
+        $this->pendingRoundId = $round->id;
+        $this->pendingRoundAction = $action;
+        $this->pendingCandidateName = trim($round->candidate->first_name . ' ' . $round->candidate->last_name);
+        $this->pendingRoundType = $round->type;
+        $this->showRoundConfirmation = true;
     }
 
-    public function cancelRound(int $candidateId, string $roundType): void
+    public function confirmRoundAction(): void
     {
-        // TODO: Update this round's status to "Cancelled", notify the candidate, and log an activity.
+        if (! $this->showRoundConfirmation || $this->pendingRoundId === null || ! in_array($this->pendingRoundAction, ['complete', 'cancel'], true)) {
+            $this->close();
+
+            return;
+        }
+
+        $round = CandidateRound::with('candidate')->findOrFail($this->pendingRoundId);
+
+        if (in_array($this->effectiveRoundStatus($round), ['Completed', 'Cancelled'], true)) {
+            $this->close();
+
+            return;
+        }
+
+        $round->update([
+            'status' => $this->pendingRoundAction === 'complete' ? 'Completed' : 'Cancelled',
+        ]);
+
+        $candidateName = $this->pendingCandidateName;
+        $status = $this->pendingRoundAction === 'complete' ? 'completed' : 'cancelled';
+
+        $this->close();
+
+        session()->flash('success', "{$candidateName}'s round was {$status}.");
+    }
+
+    public function close(): void
+    {
+        $this->reset([
+            'showRoundConfirmation',
+            'pendingRoundId',
+            'pendingRoundAction',
+            'pendingCandidateName',
+            'pendingRoundType',
+        ]);
+    }
+
+    protected function effectiveRoundStatus(CandidateRound $round): string
+    {
+        if ($round->status !== null) {
+            return $round->status;
+        }
+
+        $candidate = $round->candidate;
+
+        if ($candidate->status === 'Rejected' || $candidate->current_stage === 'Rejected') {
+            return 'Cancelled';
+        }
+
+        if ($candidate->status === 'Selected' || $candidate->current_stage === 'Selected') {
+            return 'Completed';
+        }
+
+        $roundTypes = array_map(fn(RoundType $type): string => $type->value, RoundType::cases());
+        $currentStageIndex = array_search($candidate->current_stage, $roundTypes, true);
+        $roundIndex = array_search($round->type, $roundTypes, true);
+
+        if ($currentStageIndex === false || $roundIndex === false) {
+            return 'Pending';
+        }
+
+        return match (true) {
+            $roundIndex < $currentStageIndex => 'Completed',
+            $roundIndex === $currentStageIndex => 'Scheduled',
+            default => 'Pending',
+        };
     }
 
     public function render()
@@ -173,10 +262,10 @@ class ListRounds extends Component
         $rounds = $this->roundsQuery()
             ->orderBy('candidate_rounds.schedule_at', $this->sortDirection)
             ->paginate($this->perPage)
-            ->through(fn (CandidateRound $round): array => [
+            ->through(fn(CandidateRound $round): array => [
                 'id' => $round->id,
                 'candidate_id' => $round->candidate_id,
-                'candidate_name' => trim($round->candidate->first_name.' '.$round->candidate->last_name),
+                'candidate_name' => trim($round->candidate->first_name . ' ' . $round->candidate->last_name),
                 'type' => $round->type,
                 'date' => $round->schedule_at->toDateString(),
                 'time' => $round->schedule_at->format('h:i A'),

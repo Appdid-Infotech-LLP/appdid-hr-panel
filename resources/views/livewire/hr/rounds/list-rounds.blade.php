@@ -136,29 +136,31 @@
                                             </svg>
                                         </a>
 
-                                        <details class="relative">
-                                            <summary
-                                                class="flex h-8 w-8 list-none items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M12 6.75h.007v.008H12V6.75Zm0 5.25h.007v.008H12V12Zm0 5.25h.007v.008H12v-.008Z" />
-                                                </svg>
-                                            </summary>
+                                        @if (!in_array($round['status'], ['Completed', 'Cancelled'], true))
+                                            <details class="relative">
+                                                <summary
+                                                    class="flex h-8 w-8 list-none items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke-width="1.75"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M12 6.75h.007v.008H12V6.75Zm0 5.25h.007v.008H12V12Zm0 5.25h.007v.008H12v-.008Z" />
+                                                    </svg>
+                                                </summary>
 
-                                            <div
-                                                class="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-                                                <button type="button"
-                                                    wire:click="markCompleted({{ $round['candidate_id'] }}, '{{ $round['type'] }}')"
-                                                    class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Mark
-                                                    Completed</button>
-                                                <button type="button"
-                                                    wire:click="cancelRound({{ $round['candidate_id'] }}, '{{ $round['type'] }}')"
-                                                    wire:confirm="Cancel this round for {{ $round['candidate_name'] }}?"
-                                                    class="block w-full px-3.5 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">Cancel
-                                                    Round</button>
-                                            </div>
-                                        </details>
+                                                <div
+                                                    class="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                                    <button type="button"
+                                                        wire:click="openRoundConfirmation({{ $round['id'] }}, 'complete')"
+                                                        class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Mark
+                                                        Completed</button>
+                                                    <button type="button"
+                                                        wire:click="openRoundConfirmation({{ $round['id'] }}, 'cancel')"
+                                                        class="block w-full px-3.5 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">Cancel
+                                                        Round</button>
+                                                </div>
+                                            </details>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -172,4 +174,30 @@
             </div>
         @endif
     </x-hr.section-card>
+
+    <x-hr.modal :show="$showRoundConfirmation" :title="$pendingRoundAction === 'complete' ? 'Mark round complete?' : 'Cancel round?'">
+        <p class="text-sm text-slate-600">
+            @if ($pendingRoundAction === 'complete')
+                Mark {{ $pendingCandidateName }}'s {{ $pendingRoundType }} as completed?
+            @else
+                Cancel {{ $pendingCandidateName }}'s {{ $pendingRoundType }}?
+            @endif
+        </p>
+
+        <x-slot:footer>
+            <button type="button" wire:click="close"
+                class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Keep Round
+            </button>
+            <button type="button" wire:click="confirmRoundAction" wire:loading.attr="disabled"
+                wire:target="confirmRoundAction" @class([
+                    'inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-60',
+                    'bg-rose-600 hover:bg-rose-700' => $pendingRoundAction === 'cancel',
+                    'bg-brand-teal hover:bg-brand-teal-dark' =>
+                        $pendingRoundAction === 'complete',
+                ])>
+                {{ $pendingRoundAction === 'complete' ? 'Mark Completed' : 'Cancel Round' }}
+            </button>
+        </x-slot:footer>
+    </x-hr.modal>
 </div>
