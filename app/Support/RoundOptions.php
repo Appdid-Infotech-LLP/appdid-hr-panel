@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\RoundStatus;
 use App\Enums\RoundType;
 use App\Models\Admin;
 use App\Models\User;
@@ -19,14 +20,7 @@ class RoundOptions
 
     public static function statuses(): array
     {
-        return [
-            'Pending' => 'Pending',
-            'Scheduled' => 'Scheduled',
-            'Completed' => 'Completed',
-            'Cancelled' => 'Cancelled',
-            'Rescheduled' => 'Rescheduled',
-            'No Show' => 'No Show',
-        ];
+        return RoundStatus::options();
     }
 
     public static function modes(): array
@@ -37,15 +31,14 @@ class RoundOptions
         ];
     }
 
-
     public static function interviewers(): array
     {
         $admins = Admin::get(['id', 'name'])
-            ->mapWithKeys(fn(Admin $admin) => ["admin:{$admin->id}" => "{$admin->name} (Admin)"]);
+            ->mapWithKeys(fn (Admin $admin) => ["admin:{$admin->id}" => "{$admin->name} (Admin)"]);
 
         $users = User::where('status', 'active')
             ->get(['id', 'name'])
-            ->mapWithKeys(fn(User $user) => ["user:{$user->id}" => "{$user->name}"]);
+            ->mapWithKeys(fn (User $user) => ["user:{$user->id}" => "{$user->name}"]);
 
         return $admins->merge($users)->all();
     }

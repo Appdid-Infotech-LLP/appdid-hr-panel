@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Hr\Rounds;
 
-use App\Support\DemoCandidates;
+use App\Enums\RoundType;
+use App\Models\CandidateRound;
 use App\Support\RoundOptions;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -34,6 +34,66 @@ class ListRounds extends Component
 
     public int $perPage = 10;
 
+    protected function roundsQuery(): Builder
+    {
+        $query = CandidateRound::query()
+            ->join('candidates', 'candidate_rounds.candidate_id', '=', 'candidates.id')
+            ->select('candidate_rounds.*')
+            ->with(['candidate', 'interviewer']);
+
+        [$statusSql, $statusBindings] = $this->statusExpression();
+        $query->selectRaw("{$statusSql} as computed_status", $statusBindings);
+
+        $searchTerms = preg_split('/\s+/', trim($this->search), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        foreach ($searchTerms as $searchTerm) {
+            $query->where(function (Builder $nameQuery) use ($searchTerm): void {
+                $nameQuery
+                    ->where('candidates.first_name', 'like', "%{$searchTerm}%")
+                    ->orWhere('candidates.last_name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($this->typeFilter !== '') {
+            $query->where('candidate_rounds.type', $this->typeFilter);
+        }
+
+        if ($this->statusFilter !== '') {
+            $query->whereRaw("({$statusSql}) = ?", [...$statusBindings, $this->statusFilter]);
+        }
+
+        if ($this->modeFilter !== '') {
+            $query->where('candidate_rounds.mode', $this->modeFilter);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array{string, list<string>}
+     */
+    protected function statusExpression(): array
+    {
+        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
+        $cases = [
+            'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
+            'WHEN candidates.status = ? OR candidates.current_stage = ? THEN ?',
+        ];
+        $bindings = ['Rejected', 'Rejected', 'Cancelled', 'Selected', 'Selected', 'Completed'];
+
+        foreach ($roundTypes as $stageIndex => $stage) {
+            $cases[] = 'WHEN candidates.current_stage = ? AND candidate_rounds.type = ? THEN ?';
+            array_push($bindings, $stage, $stage, 'Scheduled');
+
+            foreach (array_slice($roundTypes, 0, $stageIndex) as $completedRoundType) {
+                $cases[] = 'WHEN candidates.current_stage = ? AND candidate_rounds.type = ? THEN ?';
+                array_push($bindings, $stage, $completedRoundType, 'Completed');
+            }
+        }
+
+        return ['CASE '.implode(' ', $cases).' ELSE ? END', [...$bindings, 'Pending']];
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -56,6 +116,10 @@ class ListRounds extends Component
 
     public function sortBy(string $field): void
     {
+        if ($field !== 'date') {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -82,49 +146,15 @@ class ListRounds extends Component
 
     public function statuses(): array
     {
-        return RoundOptions::statuses();
+        return array_intersect_key(
+            RoundOptions::statuses(),
+            array_flip(['Pending', 'Scheduled', 'Completed', 'Cancelled']),
+        );
     }
 
     public function modes(): array
     {
         return RoundOptions::modes();
-    }
-
-    /**
-     * TODO — YOUR IMPLEMENTATION
-     * Replace with a RecruitmentRound query once that model/migration exist:
-     *   RecruitmentRound::with('candidate')
-     *       ->when($this->search, fn ($q) => $q->whereHas('candidate', ...))
-     *       ->when($this->typeFilter, fn ($q) => $q->where('round_type', $this->typeFilter))
-     *       ->orderBy($this->sortField, $this->sortDirection)
-     *       ->paginate($this->perPage);
-     */
-    protected function filteredRounds(): Collection
-    {
-        $search = trim(mb_strtolower($this->search));
-
-        return collect(DemoCandidates::allRoundsFlattened())
-            ->when($search !== '', fn (Collection $rows) => $rows->filter(
-                fn (array $row) => str_contains(mb_strtolower($row['candidate_name']), $search)
-            ))
-            ->when($this->typeFilter !== '', fn (Collection $rows) => $rows->where('type', $this->typeFilter))
-            ->when($this->statusFilter !== '', fn (Collection $rows) => $rows->where('status', $this->statusFilter))
-            ->when($this->modeFilter !== '', fn (Collection $rows) => $rows->where('mode', $this->modeFilter))
-            ->sortBy($this->sortField, SORT_REGULAR, $this->sortDirection === 'desc')
-            ->values();
-    }
-
-    protected function paginate(Collection $items): LengthAwarePaginator
-    {
-        $page = $this->getPage();
-
-        return new LengthAwarePaginator(
-            $items->forPage($page, $this->perPage)->values(),
-            $items->count(),
-            $this->perPage,
-            $page,
-            ['path' => request()->url(), 'pageName' => 'page'],
-        );
     }
 
     // Row actions — UI placeholders only.
@@ -140,9 +170,24 @@ class ListRounds extends Component
 
     public function render()
     {
+        $rounds = $this->roundsQuery()
+            ->orderBy('candidate_rounds.schedule_at', $this->sortDirection)
+            ->paginate($this->perPage)
+            ->through(fn (CandidateRound $round): array => [
+                'id' => $round->id,
+                'candidate_id' => $round->candidate_id,
+                'candidate_name' => trim($round->candidate->first_name.' '.$round->candidate->last_name),
+                'type' => $round->type,
+                'date' => $round->schedule_at->toDateString(),
+                'time' => $round->schedule_at->format('h:i A'),
+                'mode' => $round->mode,
+                'interviewer' => $round->interviewer?->name ?? '—',
+                'status' => $round->computed_status,
+            ]);
+
         return view('livewire.hr.rounds.list-rounds', [
-            'rounds' => $this->paginate($this->filteredRounds()),
-            'totalCount' => count(DemoCandidates::allRoundsFlattened()),
+            'rounds' => $rounds,
+            'totalCount' => CandidateRound::count(),
         ]);
     }
 }
