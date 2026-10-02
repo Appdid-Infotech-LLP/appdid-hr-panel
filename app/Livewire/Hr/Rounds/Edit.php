@@ -30,6 +30,12 @@ class Edit extends Component
 
     public string $notes = '';
 
+    // Google Calendar isn't integrated — these are purely visual until a
+    // calendar_event_id column exists on candidate_rounds to back them.
+    public string $calendarStatus = 'Not Synced';
+
+    public ?string $calendarEventId = null;
+
     /**
      * TODO — YOUR IMPLEMENTATION
      * Replace DemoCandidates::findRound() with a real
@@ -70,6 +76,23 @@ class Edit extends Component
     protected function rules(): array
     {
         return [];
+    }
+
+    public function createCalendarEvent(): void
+    {
+        /*
+         * TODO: Integrate Google Calendar API.
+         *
+         * 1. Build the event payload from this round's date/time/mode/
+         *    meeting link/interviewer (and update it instead of creating a
+         *    new one if $this->calendarEventId is already set — this
+         *    doubles as the "reschedule" sync path).
+         * 2. Call the Google Calendar API to create or update the event.
+         * 3. Persist the returned event ID — add a `calendar_event_id`
+         *    column to candidate_rounds first, there isn't one yet.
+         * 4. Update $this->calendarStatus / $this->calendarEventId so the
+         *    UI reflects the synced state.
+         */
     }
 
     public function updateRound()

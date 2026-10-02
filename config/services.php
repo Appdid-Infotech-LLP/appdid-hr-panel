@@ -36,6 +36,10 @@ return [
     ],
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
-    ]
+    ],
+    'google_calendar' => [
+        'credentials_path' => env('GOOGLE_CALENDAR_CREDENTIALS'),
+        'calendar_id' => env('GOOGLE_CALENDAR_ID'),
+    ],
 
 ];

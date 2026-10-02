@@ -89,7 +89,7 @@ class ListRounds extends Component
      */
     protected function statusExpression(): array
     {
-        $roundTypes = array_map(fn(RoundType $type): string => $type->value, RoundType::cases());
+        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
         $cases = [
             'WHEN candidate_rounds.status IS NOT NULL THEN candidate_rounds.status',
             'WHEN candidates.current_stage = ? THEN ?',
@@ -107,7 +107,7 @@ class ListRounds extends Component
             }
         }
 
-        return ['CASE ' . implode(' ', $cases) . ' ELSE ? END', [...$bindings, 'Pending']];
+        return ['CASE '.implode(' ', $cases).' ELSE ? END', [...$bindings, 'Pending']];
     }
 
     public function updatingSearch(): void
@@ -182,7 +182,7 @@ class ListRounds extends Component
 
         $this->pendingRoundId = $round->id;
         $this->pendingRoundAction = $action;
-        $this->pendingCandidateName = trim($round->candidate->first_name . ' ' . $round->candidate->last_name);
+        $this->pendingCandidateName = trim($round->candidate->first_name.' '.$round->candidate->last_name);
         $this->pendingRoundType = $round->type;
         $this->showRoundConfirmation = true;
     }
@@ -215,6 +215,11 @@ class ListRounds extends Component
         session()->flash('success', "{$candidateName}'s round was {$status}.");
     }
 
+    public function createCalendarEvent(int $roundId): void
+    {
+        // TODO: Integrate Google Calendar API — see Rounds\Edit::createCalendarEvent() for the detailed steps.
+    }
+
     public function close(): void
     {
         $this->reset([
@@ -242,7 +247,7 @@ class ListRounds extends Component
             return 'Completed';
         }
 
-        $roundTypes = array_map(fn(RoundType $type): string => $type->value, RoundType::cases());
+        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
         $currentStageIndex = array_search($candidate->current_stage, $roundTypes, true);
         $roundIndex = array_search($round->type, $roundTypes, true);
 
@@ -262,10 +267,10 @@ class ListRounds extends Component
         $rounds = $this->roundsQuery()
             ->orderBy('candidate_rounds.schedule_at', $this->sortDirection)
             ->paginate($this->perPage)
-            ->through(fn(CandidateRound $round): array => [
+            ->through(fn (CandidateRound $round): array => [
                 'id' => $round->id,
                 'candidate_id' => $round->candidate_id,
-                'candidate_name' => trim($round->candidate->first_name . ' ' . $round->candidate->last_name),
+                'candidate_name' => trim($round->candidate->first_name.' '.$round->candidate->last_name),
                 'type' => $round->type,
                 'date' => $round->schedule_at->toDateString(),
                 'time' => $round->schedule_at->format('h:i A'),

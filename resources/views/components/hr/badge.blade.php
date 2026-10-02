@@ -21,6 +21,8 @@
         'in person' => 'bg-slate-100 text-slate-600',
         'yes' => 'bg-emerald-50 text-emerald-600',
         'not yet' => 'bg-slate-100 text-slate-600',
+        'synced' => 'bg-emerald-50 text-emerald-600',
+        'not synced' => 'bg-slate-100 text-slate-600',
     ];
 
     $variant = $variants[strtolower($status)] ?? 'bg-slate-100 text-slate-600';
