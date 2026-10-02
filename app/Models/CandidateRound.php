@@ -16,6 +16,7 @@ class CandidateRound extends Model
         'interviewer_id',
         'notes',
         'status',
+        'calendar_event_id',
     ];
 
     protected $casts = [

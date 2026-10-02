@@ -46,7 +46,6 @@ class Candidate extends Model
         'experience_years' => 'decimal:1',
     ];
 
-
     public function rounds()
     {
         return $this->hasMany(CandidateRound::class);

@@ -5,7 +5,7 @@ namespace App\Livewire\Hr\Rounds;
 use App\Enums\RoundType;
 use App\Models\Candidate;
 use App\Models\CandidateRound;
-use App\Support\DemoCandidates;
+use App\Services\GoogleCalendarService;
 use App\Support\RoundOptions;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -35,8 +35,8 @@ class Schedule extends Component
     public function candidates(): array
     {
         return Candidate::all()
-            ->mapWithKeys(fn($candidate) => [
-                $candidate['id'] => $candidate['first_name'] . ' ' . $candidate['last_name'] . ' — ' . ($candidate['current_designation'] ?? 'Candidate'),
+            ->mapWithKeys(fn ($candidate) => [
+                $candidate['id'] => $candidate['first_name'].' '.$candidate['last_name'].' — '.($candidate['current_designation'] ?? 'Candidate'),
             ])
             ->all();
     }
@@ -53,9 +53,9 @@ class Schedule extends Component
 
     public function selectedCandidateName(): ?string
     {
-        $candidate = $this->candidateId ? DemoCandidates::find($this->candidateId) : null;
+        $candidate = $this->candidateId ? Candidate::find($this->candidateId) : null;
 
-        return $candidate ? $candidate['first_name'] . ' ' . $candidate['last_name'] : null;
+        return $candidate ? "{$candidate->first_name} {$candidate->last_name}" : null;
     }
 
     protected function rules(): array
@@ -98,7 +98,7 @@ class Schedule extends Component
 
         [$interviewerType, $interviewerId] = explode(':', $this->interviewer, 2);
 
-        $candidate->rounds()->create([
+        $round = $candidate->rounds()->create([
             'type' => $this->roundType,
             'schedule_at' => "{$this->date} {$this->time}:00",
             'mode' => $this->mode,
@@ -107,6 +107,15 @@ class Schedule extends Component
             'interviewer_id' => $interviewerId,
             'notes' => $this->notes,
         ]);
+
+        try {
+            $eventId = app(GoogleCalendarService::class)->createEvent($round->load(['candidate', 'interviewer']));
+            $round->update(['calendar_event_id' => $eventId]);
+        } catch (\Throwable $e) {
+            \Log::error('Google Calendar sync failed: '.$e->getMessage());
+
+            session()->flash('warning', 'Round scheduled, but the calendar invite could not be created. You can retry from the round\'s edit page.');
+        }
 
         session()->flash('success', 'Round scheduled successfully.');
 
