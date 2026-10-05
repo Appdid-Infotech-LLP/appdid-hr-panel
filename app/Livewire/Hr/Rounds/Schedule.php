@@ -18,6 +18,7 @@ class Schedule extends Component
     #[Url]
     public ?int $candidateId = null;
 
+    #[Url]
     public string $roundType = '';
 
     public string $date = '';

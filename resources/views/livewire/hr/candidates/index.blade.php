@@ -95,7 +95,7 @@
                 @endif
             </div>
         @else
-            <div class="-mx-5 -mt-5 overflow-x-auto">
+            <div id="candidates-table-scroll" class="-mx-5 -mt-5 overflow-x-auto">
                 <table class="w-full min-w-240 text-left text-sm">
                     <thead>
                         <tr class="border-b border-slate-100 text-xs tracking-wide text-slate-500 uppercase">
@@ -147,16 +147,20 @@
                                         </a>
 
                                         {{--
-                                            Zero-JS dropdown via the native <details>/<summary> element (no
-                                            Alpine, no click-outside handling — it stays open until toggled
-                                            again, which is an accepted tradeoff for a JS-free menu).
+                                            <details>/<summary> dropdown (no Alpine, no click-outside
+                                            handling — accepted tradeoff). The panel is `fixed`, not
+                                            `absolute`, and positioned by the script below: this table's
+                                            horizontal scroll wrapper has an implicit vertical "auto"
+                                            overflow too (a CSS2.1 rule — setting overflow-x alone still
+                                            makes overflow-y auto), which would otherwise clip the panel
+                                            for rows near the bottom. Same fix as the Pipeline board.
                                         --}}
-                                        <details class="relative">
+                                        <details class="candidate-row-menu relative">
                                             <summary class="flex h-8 w-8 list-none items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75h.007v.008H12V6.75Zm0 5.25h.007v.008H12V12Zm0 5.25h.007v.008H12v-.008Z" /></svg>
                                             </summary>
 
-                                            <div class="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                            <div class="candidate-row-menu-panel fixed z-50 max-h-80 w-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
                                                 <button type="button" wire:click="scheduleRound({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Schedule Round</button>
                                                 <button type="button" wire:click="sendEmail({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Send Email</button>
                                                 <button
@@ -180,3 +184,65 @@
         @endif
     </x-hr.section-card>
 </div>
+
+@script
+<script>
+    const scrollWrap = document.getElementById('candidates-table-scroll');
+
+    const positionMenuPanel = (details) => {
+        const summary = details.querySelector('summary');
+        const panel = details.querySelector('.candidate-row-menu-panel');
+
+        if (!summary || !panel) {
+            return;
+        }
+
+        const anchor = summary.getBoundingClientRect();
+        const margin = 8;
+
+        let left = anchor.right - panel.offsetWidth;
+        left = Math.min(Math.max(left, margin), window.innerWidth - panel.offsetWidth - margin);
+
+        let top = anchor.bottom + 4;
+        if (top + panel.offsetHeight > window.innerHeight - margin) {
+            top = anchor.top - panel.offsetHeight - 4;
+        }
+
+        panel.style.left = `${left}px`;
+        panel.style.top = `${top}px`;
+    };
+
+    const closeOpenRowMenus = (except = null) => {
+        if (!document.body.contains(scrollWrap)) {
+            return;
+        }
+
+        scrollWrap.querySelectorAll('details.candidate-row-menu[open]').forEach((details) => {
+            if (details !== except) {
+                details.open = false;
+            }
+        });
+    };
+
+    // 'toggle' doesn't bubble, but it still passes through the capture
+    // phase on its way down to the <details> element, so one capture-phase
+    // listener on the wrapper still catches every row's menu.
+    scrollWrap.addEventListener('toggle', (event) => {
+        const details = event.target;
+
+        if (!details.matches || !details.matches('details.candidate-row-menu') || !details.open) {
+            return;
+        }
+
+        closeOpenRowMenus(details);
+        positionMenuPanel(details);
+    }, true);
+
+    // The panel is `fixed`, so it won't track the table or the page
+    // scrolling underneath it — close it rather than let it drift away
+    // from the row it belongs to.
+    scrollWrap.addEventListener('scroll', () => closeOpenRowMenus(), true);
+    window.addEventListener('scroll', () => closeOpenRowMenus(), true);
+    window.addEventListener('resize', () => closeOpenRowMenus());
+</script>
+@endscript

@@ -73,4 +73,23 @@ class RoundStatusResolver
             default => 'Pending',
         };
     }
+
+    /**
+     * The stage a candidate should default into once a round of this type
+     * is marked Completed — the next step in HR Round → Task Round →
+     * Technical Round → Final Round. Null for Final Round (and for any
+     * value that isn't a round type at all): Selected/Rejected is always
+     * an explicit, confirmed HR decision, never automatic.
+     */
+    public static function stageAfterCompleting(string $roundType): ?string
+    {
+        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
+        $index = array_search($roundType, $roundTypes, true);
+
+        if ($index === false || ! array_key_exists($index + 1, $roundTypes)) {
+            return null;
+        }
+
+        return $roundTypes[$index + 1];
+    }
 }

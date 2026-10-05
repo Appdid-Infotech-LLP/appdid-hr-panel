@@ -22,7 +22,6 @@ class ComingSoon extends Component
      */
     protected array $pages = [
         'hr.candidates.index' => ['title' => 'Candidates', 'phase' => 'Phase 3'],
-        'hr.pipeline' => ['title' => 'Recruitment Pipeline', 'phase' => 'Phase 8'],
         'hr.rounds.index' => ['title' => 'Recruitment Rounds', 'phase' => 'Phase 5'],
         'hr.gantt' => ['title' => 'Recruitment Gantt', 'phase' => 'Phase 9'],
         'hr.reports' => ['title' => 'Reports', 'phase' => 'a later phase'],

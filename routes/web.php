@@ -10,6 +10,7 @@ use App\Livewire\Hr\Candidates\Index as CandidatesIndex;
 use App\Livewire\Hr\Candidates\Show as CandidatesShow;
 use App\Livewire\Hr\ComingSoon;
 use App\Livewire\Hr\Dashboard;
+use App\Livewire\Hr\Pipeline;
 use App\Livewire\Hr\Rounds\Edit as RoundsEdit;
 use App\Livewire\Hr\Rounds\ListRounds;
 use App\Livewire\Hr\Rounds\Schedule as RoundsSchedule;
@@ -56,9 +57,10 @@ Route::middleware(['auth', 'hr.access'])->prefix('hr')->name('hr.')->group(funct
 
     Route::get('/calendar', CalendarPage::class)->name('calendar');
 
+    Route::get('/pipeline', Pipeline::class)->name('pipeline');
+
     // These point at a shared placeholder until their own phase builds the
     // real Livewire component (see App\Livewire\Hr\ComingSoon).
-    Route::get('/pipeline', ComingSoon::class)->name('pipeline');
     Route::get('/gantt', ComingSoon::class)->name('gantt');
     Route::get('/reports', ComingSoon::class)->name('reports');
 });

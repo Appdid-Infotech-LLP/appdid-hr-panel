@@ -184,10 +184,40 @@ class ListRounds extends Component
 
         $candidateName = $this->pendingCandidateName;
         $status = $this->pendingRoundAction === 'complete' ? 'completed' : 'cancelled';
+        $nextStage = $this->pendingRoundAction === 'complete' ? $this->advanceStageIfCurrent($round) : null;
 
         $this->close();
 
-        session()->flash('success', "{$candidateName}'s round was {$status}.");
+        session()->flash('success', $nextStage
+            ? "{$candidateName}'s round was completed — moved to {$nextStage}."
+            : "{$candidateName}'s round was {$status}.");
+    }
+
+    /**
+     * Default stage progression: completing a round moves the candidate
+     * into the next round's stage, but only if they were still sitting at
+     * this round's stage — if HR already moved them elsewhere (they have
+     * that flexibility on the Pipeline board), completing an old round
+     * shouldn't yank them back into the sequence. Completing a Final Round
+     * never auto-advances: Selected/Rejected is always an explicit,
+     * confirmed decision (see Candidates\Show::concludeAs() and
+     * Pipeline::moveToStage()).
+     */
+    protected function advanceStageIfCurrent(CandidateRound $round): ?string
+    {
+        $candidate = $round->candidate;
+
+        if ($candidate->current_stage !== $round->type) {
+            return null;
+        }
+
+        $nextStage = RoundStatusResolver::stageAfterCompleting($round->type);
+
+        if ($nextStage !== null) {
+            $candidate->update(['current_stage' => $nextStage]);
+        }
+
+        return $nextStage;
     }
 
     public function createCalendarEvent(int $roundId): void
