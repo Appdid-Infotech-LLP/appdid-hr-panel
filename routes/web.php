@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GoogleCalendarController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Hr\Candidates\Components\ResumeUpload;
 use App\Livewire\Hr\Candidates\Create as CandidatesCreate;
@@ -11,6 +12,7 @@ use App\Livewire\Hr\Dashboard;
 use App\Livewire\Hr\Rounds\Edit as RoundsEdit;
 use App\Livewire\Hr\Rounds\ListRounds;
 use App\Livewire\Hr\Rounds\Schedule as RoundsSchedule;
+use App\Livewire\Hr\Settings;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -43,11 +45,18 @@ Route::middleware(['auth', 'hr.access'])->prefix('hr')->name('hr.')->group(funct
         Route::get('/{candidateId}/{roundType}/edit', RoundsEdit::class)->name('edit');
     });
 
+    Route::prefix('google-calendar')->name('google-calendar.')->group(function () {
+        Route::get('/connect', [GoogleCalendarController::class, 'connect'])->name('connect');
+        Route::get('/callback', [GoogleCalendarController::class, 'callback'])->name('callback');
+        Route::post('/disconnect', [GoogleCalendarController::class, 'disconnect'])->name('disconnect');
+    });
+
+    Route::get('/settings', Settings::class)->name('settings');
+
     // These point at a shared placeholder until their own phase builds the
     // real Livewire component (see App\Livewire\Hr\ComingSoon).
     Route::get('/pipeline', ComingSoon::class)->name('pipeline');
     Route::get('/gantt', ComingSoon::class)->name('gantt');
     Route::get('/calendar', ComingSoon::class)->name('calendar');
     Route::get('/reports', ComingSoon::class)->name('reports');
-    Route::get('/settings', ComingSoon::class)->name('settings');
 });

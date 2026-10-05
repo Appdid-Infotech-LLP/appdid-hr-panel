@@ -37,7 +37,12 @@ return [
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
     ],
+    // OAuth (per-admin calendar) replaces the old service-account approach —
+    // credentials_path/calendar_id below are no longer used by
+    // GoogleCalendarService, kept only so old .env values don't dangle.
     'google_calendar' => [
+        'client_id' => env('GOOGLE_OAUTH_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_OAUTH_CLIENT_SECRET'),
         'credentials_path' => env('GOOGLE_CALENDAR_CREDENTIALS'),
         'calendar_id' => env('GOOGLE_CALENDAR_ID'),
     ],

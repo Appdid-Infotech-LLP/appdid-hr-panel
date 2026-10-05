@@ -2,27 +2,58 @@
 
 namespace App\Services;
 
+use App\Models\Admin;
 use App\Models\CandidateRound;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventAttendee;
 use Google\Service\Calendar\EventDateTime;
+use Illuminate\Support\Facades\Auth;
+use RuntimeException;
 
 class GoogleCalendarService
 {
     protected Calendar $service;
 
-    protected string $calendarId;
+    // The event lands on whichever Google account the logged-in admin
+    // connected — not a shared calendar, so always their own "primary".
+    protected string $calendarId = 'primary';
 
+    /**
+     * @throws RuntimeException if the current admin hasn't connected Google
+     *                          Calendar, or their connection has expired.
+     */
     public function __construct()
     {
+        $admin = Auth::user();
+
+        if (! $admin instanceof Admin || ! $admin->hasGoogleCalendarConnected()) {
+            throw new RuntimeException('Google Calendar is not connected for this account. Connect it from Settings first.');
+        }
+
         $client = new Client;
-        $client->setAuthConfig(base_path(config('services.google_calendar.credentials_path')));
-        $client->addScope(Calendar::CALENDAR);
+        $client->setClientId(config('services.google_calendar.client_id'));
+        $client->setClientSecret(config('services.google_calendar.client_secret'));
+        $client->setAccessToken($admin->google_calendar_token);
+
+        if ($client->isAccessTokenExpired()) {
+            $refreshToken = $client->getRefreshToken();
+            $newToken = $client->fetchAccessTokenWithRefreshToken($refreshToken);
+
+            if (isset($newToken['error'])) {
+                throw new RuntimeException('Google Calendar connection expired. Please reconnect from Settings.');
+            }
+
+            // Google often omits refresh_token on a refresh response — it
+            // only sends a new one on the original consent — so keep ours.
+            $newToken['refresh_token'] ??= $refreshToken;
+
+            $admin->update(['google_calendar_token' => $newToken]);
+            $client->setAccessToken($newToken);
+        }
 
         $this->service = new Calendar($client);
-        $this->calendarId = config('services.google_calendar.calendar_id');
     }
 
     public function createEvent(CandidateRound $round): string
