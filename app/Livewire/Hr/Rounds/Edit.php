@@ -89,13 +89,17 @@ class Edit extends Component
         try {
             $service = app(GoogleCalendarService::class);
 
-            $eventId = $this->calendarEventId
-                ? tap($this->calendarEventId, fn (string $id) => $service->updateEvent($id, $round))
+            $event = $this->calendarEventId
+                ? $service->updateEvent($this->calendarEventId, $round)
                 : $service->createEvent($round);
 
-            $round->update(['calendar_event_id' => $eventId]);
+            $round->update([
+                'calendar_event_id' => $event->getId(),
+                'meeting_link' => $round->meeting_link ?: GoogleCalendarService::meetLink($event),
+            ]);
 
-            $this->calendarEventId = $eventId;
+            $this->calendarEventId = $event->getId();
+            $this->meetingLink = (string) $round->meeting_link;
             $this->calendarStatus = 'Synced';
 
             session()->flash('success', 'Calendar event synced.');

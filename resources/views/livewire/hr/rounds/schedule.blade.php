@@ -59,8 +59,9 @@
                 </div>
 
                 @if ($mode === 'Virtual')
-                    <x-hr.input name="meetingLink" type="url" label="Meeting Link"
-                        placeholder="https://meet.google.com/..." />
+                    <p class="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                        A Google Meet link will be generated automatically once this round is scheduled.
+                    </p>
                 @endif
 
                 <x-hr.select2 name="interviewer" label="Interviewer" :options="$this->interviewers()" :value="$interviewer"

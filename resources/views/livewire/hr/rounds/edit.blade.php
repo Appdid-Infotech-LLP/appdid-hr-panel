@@ -54,7 +54,14 @@
                 </div>
 
                 @if ($mode === 'Virtual')
-                    <x-hr.input name="meetingLink" type="url" label="Meeting Link" placeholder="https://meet.google.com/..." />
+                    <div>
+                        <span class="mb-1.5 block text-sm font-medium text-slate-700">Meeting Link</span>
+                        @if ($meetingLink)
+                            <a href="{{ $meetingLink }}" target="_blank" class="block truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-brand-teal hover:underline">{{ $meetingLink }}</a>
+                        @else
+                            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400">Generated automatically once synced to Google Calendar.</p>
+                        @endif
+                    </div>
                 @endif
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">

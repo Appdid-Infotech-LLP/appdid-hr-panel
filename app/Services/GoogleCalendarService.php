@@ -6,10 +6,14 @@ use App\Models\Admin;
 use App\Models\CandidateRound;
 use Google\Client;
 use Google\Service\Calendar;
+use Google\Service\Calendar\ConferenceData;
+use Google\Service\Calendar\ConferenceSolutionKey;
+use Google\Service\Calendar\CreateConferenceRequest;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventAttendee;
 use Google\Service\Calendar\EventDateTime;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class GoogleCalendarService
@@ -56,18 +60,40 @@ class GoogleCalendarService
         $this->service = new Calendar($client);
     }
 
-    public function createEvent(CandidateRound $round): string
+    public function createEvent(CandidateRound $round): Event
     {
         $event = $this->buildEvent($round);
 
-        $created = $this->service->events->insert($this->calendarId, $event, ['sendUpdates' => 'all']);
-
-        return $created->getId();
+        return $this->service->events->insert($this->calendarId, $event, [
+            'sendUpdates' => 'all',
+            'conferenceDataVersion' => 1,
+        ]);
     }
 
-    public function updateEvent(string $eventId, CandidateRound $round): void
+    public function updateEvent(string $eventId, CandidateRound $round): Event
     {
-        $this->service->events->update($this->calendarId, $eventId, $this->buildEvent($round), ['sendUpdates' => 'all']);
+        return $this->service->events->update($this->calendarId, $eventId, $this->buildEvent($round), [
+            'sendUpdates' => 'all',
+            'conferenceDataVersion' => 1,
+        ]);
+    }
+
+    /**
+     * Pulls the generated meet.google.com link out of an Event returned by
+     * createEvent()/updateEvent(). Null if the round isn't Virtual, or
+     * Google hasn't attached conference data (e.g. still provisioning).
+     */
+    public static function meetLink(Event $event): ?string
+    {
+        $entryPoints = $event->getConferenceData()?->getEntryPoints() ?? [];
+
+        foreach ($entryPoints as $entryPoint) {
+            if ($entryPoint->getEntryPointType() === 'video') {
+                return $entryPoint->getUri();
+            }
+        }
+
+        return null;
     }
 
     public function deleteEvent(string $eventId): void
@@ -112,6 +138,21 @@ class GoogleCalendarService
         $event->setEnd($end);
         $event->setLocation($round->mode === 'Virtual' ? $round->meeting_link : null);
         $event->setAttendees($attendees);
+
+   
+        if ($round->mode === 'Virtual' && ! $round->meeting_link) {
+            $solutionKey = new ConferenceSolutionKey;
+            $solutionKey->setType('hangoutsMeet');
+
+            $createRequest = new CreateConferenceRequest;
+            $createRequest->setRequestId((string) Str::uuid());
+            $createRequest->setConferenceSolutionKey($solutionKey);
+
+            $conferenceData = new ConferenceData;
+            $conferenceData->setCreateRequest($createRequest);
+
+            $event->setConferenceData($conferenceData);
+        }
 
         return $event;
     }

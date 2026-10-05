@@ -26,8 +26,6 @@ class Schedule extends Component
 
     public string $mode = 'Virtual';
 
-    public string $meetingLink = '';
-
     public string $interviewer = '';
 
     public string $notes = '';
@@ -85,7 +83,6 @@ class Schedule extends Component
                     }
                 },
             ],
-            'meetingLink' => ['required_if:mode,Virtual', 'url'],
             'interviewer' => ['required', Rule::in(array_keys(RoundOptions::interviewers()))],
         ];
     }
@@ -102,15 +99,18 @@ class Schedule extends Component
             'type' => $this->roundType,
             'schedule_at' => "{$this->date} {$this->time}:00",
             'mode' => $this->mode,
-            'meeting_link' => $this->meetingLink,
             'interviewer_type' => $interviewerType,
             'interviewer_id' => $interviewerId,
             'notes' => $this->notes,
         ]);
 
         try {
-            $eventId = app(GoogleCalendarService::class)->createEvent($round->load(['candidate', 'interviewer']));
-            $round->update(['calendar_event_id' => $eventId]);
+            $event = app(GoogleCalendarService::class)->createEvent($round->load(['candidate', 'interviewer']));
+
+            $round->update([
+                'calendar_event_id' => $event->getId(),
+                'meeting_link' => GoogleCalendarService::meetLink($event),
+            ]);
         } catch (\Throwable $e) {
             \Log::error('Google Calendar sync failed: '.$e->getMessage());
 

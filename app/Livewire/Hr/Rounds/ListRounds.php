@@ -223,11 +223,14 @@ class ListRounds extends Component
         try {
             $service = app(GoogleCalendarService::class);
 
-            $eventId = $round->calendar_event_id
-                ? tap($round->calendar_event_id, fn (string $id) => $service->updateEvent($id, $round))
+            $event = $round->calendar_event_id
+                ? $service->updateEvent($round->calendar_event_id, $round)
                 : $service->createEvent($round);
 
-            $round->update(['calendar_event_id' => $eventId]);
+            $round->update([
+                'calendar_event_id' => $event->getId(),
+                'meeting_link' => $round->meeting_link ?: GoogleCalendarService::meetLink($event),
+            ]);
 
             session()->flash('success', 'Calendar event synced.');
         } catch (\Throwable $e) {
