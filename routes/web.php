@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\GoogleCalendarController;
 use App\Livewire\Auth\Login;
+use App\Livewire\Hr\CalendarPage;
 use App\Livewire\Hr\Candidates\Components\ResumeUpload;
 use App\Livewire\Hr\Candidates\Create as CandidatesCreate;
 use App\Livewire\Hr\Candidates\Edit as CandidatesEdit;
@@ -53,10 +54,11 @@ Route::middleware(['auth', 'hr.access'])->prefix('hr')->name('hr.')->group(funct
 
     Route::get('/settings', Settings::class)->name('settings');
 
+    Route::get('/calendar', CalendarPage::class)->name('calendar');
+
     // These point at a shared placeholder until their own phase builds the
     // real Livewire component (see App\Livewire\Hr\ComingSoon).
     Route::get('/pipeline', ComingSoon::class)->name('pipeline');
     Route::get('/gantt', ComingSoon::class)->name('gantt');
-    Route::get('/calendar', ComingSoon::class)->name('calendar');
     Route::get('/reports', ComingSoon::class)->name('reports');
 });

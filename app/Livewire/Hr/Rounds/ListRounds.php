@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Hr\Rounds;
 
-use App\Enums\RoundType;
 use App\Models\CandidateRound;
 use App\Services\GoogleCalendarService;
 use App\Support\RoundOptions;
+use App\Support\RoundStatusResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -57,7 +57,7 @@ class ListRounds extends Component
             ->select('candidate_rounds.*')
             ->with(['candidate', 'interviewer']);
 
-        [$statusSql, $statusBindings] = $this->statusExpression();
+        [$statusSql, $statusBindings] = RoundStatusResolver::sqlExpression();
         $query->selectRaw("{$statusSql} as computed_status", $statusBindings);
 
         $searchTerms = preg_split('/\s+/', trim($this->search), -1, PREG_SPLIT_NO_EMPTY) ?: [];
@@ -83,32 +83,6 @@ class ListRounds extends Component
         }
 
         return $query;
-    }
-
-    /**
-     * @return array{string, list<string>}
-     */
-    protected function statusExpression(): array
-    {
-        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
-        $cases = [
-            'WHEN candidate_rounds.status IS NOT NULL THEN candidate_rounds.status',
-            'WHEN candidates.current_stage = ? THEN ?',
-            'WHEN candidates.current_stage = ? THEN ?',
-        ];
-        $bindings = ['Rejected', 'Cancelled', 'Selected', 'Completed'];
-
-        foreach ($roundTypes as $stageIndex => $stage) {
-            $cases[] = 'WHEN candidates.current_stage = ? AND candidate_rounds.type = ? THEN ?';
-            array_push($bindings, $stage, $stage, 'Scheduled');
-
-            foreach (array_slice($roundTypes, 0, $stageIndex) as $completedRoundType) {
-                $cases[] = 'WHEN candidates.current_stage = ? AND candidate_rounds.type = ? THEN ?';
-                array_push($bindings, $stage, $completedRoundType, 'Completed');
-            }
-        }
-
-        return ['CASE '.implode(' ', $cases).' ELSE ? END', [...$bindings, 'Pending']];
     }
 
     public function updatingSearch(): void
@@ -177,7 +151,7 @@ class ListRounds extends Component
 
         $round = CandidateRound::with('candidate')->findOrFail($roundId);
 
-        if (in_array($this->effectiveRoundStatus($round), ['Completed', 'Cancelled'], true)) {
+        if (in_array(RoundStatusResolver::effective($round), ['Completed', 'Cancelled'], true)) {
             return;
         }
 
@@ -198,7 +172,7 @@ class ListRounds extends Component
 
         $round = CandidateRound::with('candidate')->findOrFail($this->pendingRoundId);
 
-        if (in_array($this->effectiveRoundStatus($round), ['Completed', 'Cancelled'], true)) {
+        if (in_array(RoundStatusResolver::effective($round), ['Completed', 'Cancelled'], true)) {
             $this->close();
 
             return;
@@ -249,37 +223,6 @@ class ListRounds extends Component
             'pendingCandidateName',
             'pendingRoundType',
         ]);
-    }
-
-    protected function effectiveRoundStatus(CandidateRound $round): string
-    {
-        if ($round->status !== null) {
-            return $round->status;
-        }
-
-        $candidate = $round->candidate;
-
-        if ($candidate->current_stage === 'Rejected') {
-            return 'Cancelled';
-        }
-
-        if ($candidate->current_stage === 'Selected') {
-            return 'Completed';
-        }
-
-        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
-        $currentStageIndex = array_search($candidate->current_stage, $roundTypes, true);
-        $roundIndex = array_search($round->type, $roundTypes, true);
-
-        if ($currentStageIndex === false || $roundIndex === false) {
-            return 'Pending';
-        }
-
-        return match (true) {
-            $roundIndex < $currentStageIndex => 'Completed',
-            $roundIndex === $currentStageIndex => 'Scheduled',
-            default => 'Pending',
-        };
     }
 
     public function render()

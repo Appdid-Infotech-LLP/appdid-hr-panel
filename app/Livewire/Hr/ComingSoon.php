@@ -25,7 +25,6 @@ class ComingSoon extends Component
         'hr.pipeline' => ['title' => 'Recruitment Pipeline', 'phase' => 'Phase 8'],
         'hr.rounds.index' => ['title' => 'Recruitment Rounds', 'phase' => 'Phase 5'],
         'hr.gantt' => ['title' => 'Recruitment Gantt', 'phase' => 'Phase 9'],
-        'hr.calendar' => ['title' => 'Calendar', 'phase' => 'a later phase'],
         'hr.reports' => ['title' => 'Reports', 'phase' => 'a later phase'],
         'hr.settings' => ['title' => 'Settings', 'phase' => 'a later phase'],
     ];
