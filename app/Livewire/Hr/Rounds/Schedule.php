@@ -143,6 +143,13 @@ class Schedule extends Component
             'feedback' => $this->feedback !== '' ? $this->feedback : null,
         ]);
 
+        // A candidate still at "New" enters the pipeline at whichever round
+        // was just scheduled. Anyone further along keeps their stage — HR
+        // moves them explicitly (Pipeline) or by completing a round.
+        if (in_array($candidate->current_stage, [null, 'New'], true)) {
+            $candidate->update(['current_stage' => $this->roundType]);
+        }
+
         try {
             $event = app(GoogleCalendarService::class)->createEvent($round->load(['candidate', 'interviewer']));
 
