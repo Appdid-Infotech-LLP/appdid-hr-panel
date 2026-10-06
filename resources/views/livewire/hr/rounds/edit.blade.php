@@ -120,4 +120,49 @@
             </button>
         </div>
     </form>
+
+    <x-hr.modal :show="$showRescheduleConfirmation" title="Reschedule this round?">
+        <div class="flex gap-4">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+            </div>
+
+            <div class="min-w-0 flex-1 space-y-4">
+                <p class="text-sm text-slate-600">
+                    You're changing the date or time of <span class="font-medium text-slate-900">{{ $candidateName }}</span>'s {{ $roundType }}.
+                    The round will be marked <x-hr.badge status="Rescheduled" /> and the candidate will be emailed the new schedule.
+                </p>
+
+                @if ($showRescheduleConfirmation)
+                    <div class="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                        <div>
+                            <p class="text-xs font-medium tracking-wide text-slate-400 uppercase">Currently</p>
+                            <p class="mt-0.5 text-slate-500 line-through">{{ \Illuminate\Support\Carbon::parse($originalScheduleAt)->format('M j, Y · h:i A') }}</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-4 w-4 text-slate-400 sm:block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                        <div>
+                            <p class="text-xs font-medium tracking-wide text-slate-400 uppercase">New</p>
+                            <p class="mt-0.5 font-medium text-slate-900">{{ \Illuminate\Support\Carbon::parse("{$date} {$time}")->format('M j, Y · h:i A') }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <button type="button" wire:click="close"
+                class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Go Back
+            </button>
+            <button type="button" wire:click="confirmReschedule" wire:loading.attr="disabled" wire:target="confirmReschedule"
+                class="inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60">
+                <span wire:loading.remove wire:target="confirmReschedule">Yes, Reschedule</span>
+                <span wire:loading wire:target="confirmReschedule">Rescheduling...</span>
+            </button>
+        </x-slot:footer>
+    </x-hr.modal>
 </div>

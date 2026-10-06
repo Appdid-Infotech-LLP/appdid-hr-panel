@@ -42,6 +42,11 @@ class Edit extends Component
     #[Locked]
     public string $initialStatus = '';
 
+    public bool $showRescheduleConfirmation = false;
+
+    #[Locked]
+    public string $originalScheduleAt = '';
+
     public string $notes = '';
 
     public string $calendarStatus = 'Not Synced';
@@ -66,6 +71,7 @@ class Edit extends Component
         $this->roundType = $round->type;
         $this->date = $round->schedule_at->format('Y-m-d');
         $this->time = $round->schedule_at->format('H:i');
+        $this->originalScheduleAt = $round->schedule_at->format('Y-m-d H:i');
         $this->mode = $round->mode;
         $this->meetingLink = (string) $round->meeting_link;
         $this->interviewer = "{$round->interviewer_type}:{$round->interviewer_id}";
@@ -157,16 +163,58 @@ class Edit extends Component
         }
     }
 
+    /**
+     * A date/time change is a reschedule — it needs confirmation, flips the
+     * status to Rescheduled and tells the candidate. A round that's already
+     * Completed or Cancelled is just being corrected, so it's exempt.
+     */
+    protected function isReschedule(CandidateRound $round): bool
+    {
+        $scheduleAt = Carbon::createFromFormat('Y-m-d H:i', "{$this->date} {$this->time}");
+
+        return ! $round->schedule_at->equalTo($scheduleAt)
+            && ! in_array($this->initialStatus, [RoundStatus::Completed->value, RoundStatus::Cancelled->value], true);
+    }
+
     public function updateRound()
     {
         $this->validate();
 
-        $round = CandidateRound::with(['candidate', 'interviewer'])->findOrFail($this->roundId);
+        $round = CandidateRound::findOrFail($this->roundId);
+
+        if ($this->isReschedule($round)) {
+            $this->showRescheduleConfirmation = true;
+
+            return;
+        }
+
+        return $this->saveRound($round);
+    }
+
+    public function confirmReschedule()
+    {
+        $this->showRescheduleConfirmation = false;
+
+        $this->validate();
+
+        return $this->saveRound(CandidateRound::findOrFail($this->roundId));
+    }
+
+    public function close(): void
+    {
+        $this->showRescheduleConfirmation = false;
+    }
+
+    protected function saveRound(CandidateRound $round)
+    {
+        $round->load(['candidate', 'interviewer']);
 
         [$interviewerType, $interviewerId] = explode(':', $this->interviewer, 2);
 
         $scheduleAt = Carbon::createFromFormat('Y-m-d H:i', "{$this->date} {$this->time}");
-        $rescheduled = ! $round->schedule_at->equalTo($scheduleAt) || $round->mode !== $this->mode;
+        $previousScheduleAt = $round->schedule_at->copy();
+        $timeChanged = $this->isReschedule($round);
+        $modeChanged = $round->mode !== $this->mode;
 
         $attributes = [
             'schedule_at' => $scheduleAt,
@@ -178,10 +226,13 @@ class Edit extends Component
 
         // A round with no explicit status derives it from the candidate's
         // stage (RoundStatusResolver). The form shows that derived value, so
-        // only write one when HR actually picked something different —
-        // otherwise a plain edit would freeze the status in place.
+        // only write one when something actually calls for it — a plain edit
+        // would otherwise freeze the status in place. A new date/time marks
+        // the round Rescheduled, unless HR picked a status themselves.
         if ($this->status !== $this->initialStatus) {
             $attributes['status'] = $this->status;
+        } elseif ($timeChanged) {
+            $attributes['status'] = RoundStatus::Rescheduled->value;
         }
 
         $round->update($attributes);
@@ -189,7 +240,7 @@ class Edit extends Component
 
         $warning = null;
 
-        if ($rescheduled) {
+        if ($timeChanged || $modeChanged) {
             if ($this->calendarConnected()) {
                 try {
                     $this->syncCalendarEvent($round);
@@ -200,10 +251,10 @@ class Edit extends Component
                 }
             }
 
-            SendRoundScheduledEmail::dispatch($round);
+            SendRoundScheduledEmail::dispatch($round, $timeChanged ? $previousScheduleAt : null);
         }
 
-        session()->flash('success', 'Round updated successfully.');
+        session()->flash('success', $timeChanged ? 'Round rescheduled — the candidate has been notified.' : 'Round updated successfully.');
 
         if ($warning) {
             session()->flash('warning', $warning);
