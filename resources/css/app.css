@@ -174,3 +174,101 @@
     @apply text-sm text-slate-700;
     margin-top: 0.3125rem;
 }
+
+/*
+ * flatpickr (x-hr.datepicker / x-hr.timepicker / x-hr.date-range) in the
+ * project's teal instead of its stock blue/grey. Prefixed with
+ * .flatpickr-calendar so these win over flatpickr's own stylesheet, which
+ * Vite loads after this file.
+ */
+.flatpickr-calendar {
+    @apply rounded-lg border border-slate-200 text-slate-700 shadow-lg;
+    font-family: inherit;
+}
+
+.flatpickr-calendar.open {
+    margin-top: 0.25rem;
+}
+
+.flatpickr-calendar .flatpickr-months .flatpickr-month,
+.flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-calendar .flatpickr-current-month input.cur-year {
+    @apply font-semibold text-slate-800;
+}
+
+.flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover svg {
+    fill: var(--color-brand-teal);
+}
+
+.flatpickr-calendar span.flatpickr-weekday {
+    @apply text-xs font-medium text-slate-400;
+}
+
+.flatpickr-calendar .flatpickr-day {
+    @apply rounded-lg text-slate-700;
+}
+
+.flatpickr-calendar .flatpickr-day:hover,
+.flatpickr-calendar .flatpickr-day:focus {
+    @apply border-brand-teal-light bg-brand-teal-light;
+}
+
+.flatpickr-calendar .flatpickr-day.today {
+    @apply border-brand-teal;
+}
+
+.flatpickr-calendar .flatpickr-day.today:hover,
+.flatpickr-calendar .flatpickr-day.today:focus {
+    @apply bg-brand-teal-light text-brand-teal;
+}
+
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange,
+.flatpickr-calendar .flatpickr-day.selected:hover,
+.flatpickr-calendar .flatpickr-day.startRange:hover,
+.flatpickr-calendar .flatpickr-day.endRange:hover,
+.flatpickr-calendar .flatpickr-day.selected:focus,
+.flatpickr-calendar .flatpickr-day.startRange:focus,
+.flatpickr-calendar .flatpickr-day.endRange:focus {
+    @apply border-brand-teal bg-brand-teal text-white;
+}
+
+.flatpickr-calendar .flatpickr-day.inRange,
+.flatpickr-calendar .flatpickr-day.inRange:hover {
+    @apply border-brand-teal-light bg-brand-teal-light text-brand-teal;
+    box-shadow: -5px 0 0 var(--color-brand-teal-light), 5px 0 0 var(--color-brand-teal-light);
+}
+
+.flatpickr-calendar .flatpickr-day.flatpickr-disabled,
+.flatpickr-calendar .flatpickr-day.prevMonthDay,
+.flatpickr-calendar .flatpickr-day.nextMonthDay {
+    @apply text-slate-300;
+}
+
+/* Time picker */
+.flatpickr-calendar .flatpickr-time {
+    @apply border-t border-slate-100;
+}
+
+.flatpickr-calendar .flatpickr-time input,
+.flatpickr-calendar .flatpickr-time .flatpickr-time-separator,
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm {
+    @apply font-medium text-slate-800;
+}
+
+.flatpickr-calendar .flatpickr-time input:hover,
+.flatpickr-calendar .flatpickr-time input:focus,
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm:hover,
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm:focus {
+    @apply bg-brand-teal-light;
+}
+
+.flatpickr-calendar .flatpickr-time .numInputWrapper span.arrowUp:after {
+    border-bottom-color: var(--color-slate-400);
+}
+
+.flatpickr-calendar .flatpickr-time .numInputWrapper span.arrowDown:after {
+    border-top-color: var(--color-slate-400);
+}

@@ -50,6 +50,7 @@
                 Rounds
             </x-hr.nav-link>
 
+            {{-- Hidden for now — re-enable once the Gantt page is built.
             <x-hr.nav-link route="hr.gantt">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
                     stroke-width="1.75" stroke="currentColor">
@@ -58,6 +59,7 @@
                 </svg>
                 Gantt
             </x-hr.nav-link>
+            --}}
         </div>
 
         <div class="space-y-1">
@@ -70,6 +72,7 @@
                 Calendar
             </x-hr.nav-link>
 
+            {{-- Hidden for now — re-enable once the Reports page is built.
             <x-hr.nav-link route="hr.reports">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
                     stroke-width="1.75" stroke="currentColor">
@@ -78,6 +81,7 @@
                 </svg>
                 Reports
             </x-hr.nav-link>
+            --}}
 
             <x-hr.nav-link route="hr.settings">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"

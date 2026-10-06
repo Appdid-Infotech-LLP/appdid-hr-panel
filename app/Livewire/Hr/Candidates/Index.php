@@ -3,6 +3,7 @@
 namespace App\Livewire\Hr\Candidates;
 
 use App\Enums\RoundStatus;
+use App\Enums\RoundType;
 use App\Models\Candidate;
 use App\Models\CandidateRound;
 use App\Support\CandidateOptions;
@@ -126,18 +127,56 @@ class Index extends Component
             ->when($this->dateFilter !== '', fn (Builder $q) => $q->where('created_at', '>=', now()->subDays((int) $this->dateFilter)));
     }
 
-    // Row actions — UI placeholders only, per the project's "don't build
-    // the recruitment backend" rule. Wire up real logic when you're ready.
-    public function scheduleRound(int $candidateId): void
+    protected const CONCLUDED_STAGES = ['Selected', 'Rejected'];
+
+    /**
+     * Opens Schedule Round for this candidate, pre-selecting the round that
+     * matches their stage (a "New" candidate starts at the HR Round). A
+     * concluded candidate can't have rounds scheduled — same rule as
+     * Rounds\Schedule.
+     */
+    public function scheduleRound(int $candidateId)
     {
-        // TODO: Open the Schedule Round modal (built in Phase 5) for this candidate.
+        $candidate = Candidate::findOrFail($candidateId);
+        $name = trim("{$candidate->first_name} {$candidate->last_name}");
+
+        if (in_array($candidate->current_stage, self::CONCLUDED_STAGES, true)) {
+            return $this->reloadWithFlash('warning', "{$name} has already been marked {$candidate->current_stage}, so no more rounds can be scheduled.");
+        }
+
+        $roundTypes = array_map(fn (RoundType $type): string => $type->value, RoundType::cases());
+
+        $roundType = in_array($candidate->current_stage, $roundTypes, true)
+            ? $candidate->current_stage
+            : RoundType::Hr->value;
+
+        return redirect()->route('hr.rounds.schedule', ['candidateId' => $candidate->id, 'roundType' => $roundType]);
     }
 
-    public function reject(int $candidateId): void
+    public function reject(int $candidateId)
     {
-        // TODO:
-        // 1. Update the candidate's current_stage to "Rejected".
-        // 2. Log a candidate_activities entry.
+        $candidate = Candidate::findOrFail($candidateId);
+        $name = trim("{$candidate->first_name} {$candidate->last_name}");
+
+        if (in_array($candidate->current_stage, self::CONCLUDED_STAGES, true)) {
+            return $this->reloadWithFlash('warning', "{$name} has already been marked {$candidate->current_stage}.");
+        }
+
+        $candidate->update(['current_stage' => 'Rejected']);
+
+        return $this->reloadWithFlash('success', "{$name} was marked as Rejected.");
+    }
+
+    /**
+     * Flash messages render in the layout, which a Livewire update doesn't
+     * re-render — so reload the same page (filters and page number are in the
+     * URL) to actually show the message.
+     */
+    protected function reloadWithFlash(string $type, string $message)
+    {
+        session()->flash($type, $message);
+
+        return redirect(url()->previous(route('hr.candidates.index')));
     }
 
     public function sendEmail(int $candidateId): void

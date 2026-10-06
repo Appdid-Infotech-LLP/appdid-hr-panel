@@ -35,20 +35,7 @@
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <x-hr.datepicker name="date" label="Date" :value="$date" :disabled="$locked" />
 
-                    <div>
-                        <label for="time" class="mb-1.5 block text-sm font-medium text-slate-700">Time</label>
-                        <input
-                            type="time" id="time" wire:model="time" @disabled($locked)
-                            @class([
-                                'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500',
-                                'border-rose-300 focus:border-rose-400 focus:ring-rose-100' => $errors->has('time'),
-                                'border-slate-300 focus:border-brand-teal focus:ring-brand-teal/20' => ! $errors->has('time'),
-                            ])
-                        >
-                        @error('time')
-                            <p class="mt-1.5 text-sm text-red-500">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <x-hr.timepicker name="time" label="Time" :value="$time" :disabled="$locked" />
                 </div>
 
                 <div>
