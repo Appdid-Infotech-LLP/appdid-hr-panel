@@ -16,6 +16,31 @@
     --color-brand-ink: #0c2e2d;
 }
 
+/* Tailwind v4 dropped the pointer cursor from buttons; restore it for
+   everything clickable, and show "not allowed" when it's disabled. */
+@layer base {
+    button,
+    [role='button'],
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    label[for],
+    select,
+    summary,
+    input[type='checkbox'],
+    input[type='radio'],
+    input[type='file'],
+    [wire\:click],
+    [x-on\:click] {
+        cursor: pointer;
+    }
+
+    :disabled,
+    [aria-disabled='true'] {
+        cursor: not-allowed;
+    }
+}
+
 /* Alpine: hide x-cloak'd elements until Alpine has initialised them. */
 [x-cloak] {
     display: none !important;
