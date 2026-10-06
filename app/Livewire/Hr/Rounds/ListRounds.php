@@ -3,7 +3,6 @@
 namespace App\Livewire\Hr\Rounds;
 
 use App\Models\CandidateRound;
-use App\Services\GoogleCalendarService;
 use App\Support\RoundOptions;
 use App\Support\RoundStatusResolver;
 use Illuminate\Database\Eloquent\Builder;
@@ -218,30 +217,6 @@ class ListRounds extends Component
         }
 
         return $nextStage;
-    }
-
-    public function createCalendarEvent(int $roundId): void
-    {
-        $round = CandidateRound::with(['candidate', 'interviewer'])->findOrFail($roundId);
-
-        try {
-            $service = app(GoogleCalendarService::class);
-
-            $event = $round->calendar_event_id
-                ? $service->updateEvent($round->calendar_event_id, $round)
-                : $service->createEvent($round);
-
-            $round->update([
-                'calendar_event_id' => $event->getId(),
-                'meeting_link' => $round->meeting_link ?: GoogleCalendarService::meetLink($event),
-            ]);
-
-            session()->flash('success', 'Calendar event synced.');
-        } catch (\Throwable $e) {
-            \Log::error('Google Calendar sync failed: '.$e->getMessage());
-
-            session()->flash('warning', 'Calendar sync failed. You can retry from this list.');
-        }
     }
 
     public function close(): void

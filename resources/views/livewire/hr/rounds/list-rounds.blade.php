@@ -144,6 +144,7 @@
                                             would otherwise cut off the panel for rows near the bottom.
                                             Same fix as the Candidates page.
                                         --}}
+                                        @unless (in_array($round['status'], ['Completed', 'Cancelled'], true))
                                         <details class="round-row-menu relative">
                                             <summary
                                                 class="flex h-8 w-8 list-none items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
@@ -157,22 +158,17 @@
 
                                             <div
                                                 class="round-row-menu-panel fixed z-50 max-h-80 w-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-                                                @if (!in_array($round['status'], ['Completed', 'Cancelled'], true))
-                                                    <button type="button"
-                                                        wire:click="openRoundConfirmation({{ $round['id'] }}, 'complete')"
-                                                        class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Mark
-                                                        Completed</button>
-                                                    <button type="button"
-                                                        wire:click="openRoundConfirmation({{ $round['id'] }}, 'cancel')"
-                                                        class="block w-full px-3.5 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">Cancel
-                                                        Round</button>
-                                                @endif
                                                 <button type="button"
-                                                    wire:click="createCalendarEvent({{ $round['id'] }})"
-                                                    class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Add
-                                                    to Google Calendar</button>
+                                                    wire:click="openRoundConfirmation({{ $round['id'] }}, 'complete')"
+                                                    class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Mark
+                                                    Completed</button>
+                                                <button type="button"
+                                                    wire:click="openRoundConfirmation({{ $round['id'] }}, 'cancel')"
+                                                    class="block w-full px-3.5 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">Cancel
+                                                    Round</button>
                                             </div>
                                         </details>
+                                        @endunless
                                     </div>
                                 </td>
                             </tr>
