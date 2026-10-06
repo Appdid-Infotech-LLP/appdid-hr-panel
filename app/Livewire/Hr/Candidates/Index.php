@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Hr\Candidates;
 
+use App\Enums\RoundStatus;
 use App\Models\Candidate;
+use App\Models\CandidateRound;
 use App\Support\CandidateOptions;
+use App\Support\RoundStatusResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -142,12 +145,55 @@ class Index extends Component
         $this->dispatch('open-send-email-modal', candidateId: $candidateId);
     }
 
+    /**
+     * The soonest upcoming round that's still open — Completed/Cancelled/
+     * No Show rounds, and anything already in the past, don't
+     * count as "next".
+     */
+    protected function nextRound(Candidate $candidate): ?CandidateRound
+    {
+        $closed = [
+            RoundStatus::Completed->value,
+            RoundStatus::Cancelled->value,
+            RoundStatus::NoShow->value,
+        ];
+
+        return $candidate->rounds
+            ->filter(fn (CandidateRound $round) => $round->schedule_at->isFuture()
+                && ! in_array(RoundStatusResolver::effective($round), $closed, true))
+            ->sortBy('schedule_at')
+            ->first();
+    }
+
     public function render()
     {
+        $candidates = $this->filteredCandidatesQuery()
+            ->with('rounds')
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage)
+            ->through(function (Candidate $candidate): array {
+                // RoundStatusResolver reads $round->candidate; hand it the
+                // one we already have instead of querying it per round.
+                $candidate->rounds->each->setRelation('candidate', $candidate);
+
+                $nextRound = $this->nextRound($candidate);
+
+                return [
+                    'id' => $candidate->id,
+                    'first_name' => $candidate->first_name,
+                    'last_name' => $candidate->last_name,
+                    'email' => $candidate->email,
+                    'phone' => $candidate->phone,
+                    'current_company' => $candidate->current_company,
+                    'experience_years' => $candidate->experience_years,
+                    'stage' => $candidate->current_stage ?: 'New',
+                    'next_round' => $nextRound?->type,
+                    'next_round_date' => $nextRound?->schedule_at->format('M j, Y · h:i A'),
+                ];
+            });
+
         return view('livewire.hr.candidates.index', [
-            'candidates' => $this->filteredCandidatesQuery()
-                ->orderBy($this->sortField, $this->sortDirection)
-                ->paginate($this->perPage),
+            'candidates' => $candidates,
             'totalCount' => Candidate::count(),
         ]);
     }
