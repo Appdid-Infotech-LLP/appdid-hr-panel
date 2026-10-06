@@ -3,7 +3,6 @@
 use App\Http\Controllers\GoogleCalendarController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Hr\CalendarPage;
-use App\Livewire\Hr\Candidates\Components\ResumeUpload;
 use App\Livewire\Hr\Candidates\Create as CandidatesCreate;
 use App\Livewire\Hr\Candidates\Edit as CandidatesEdit;
 use App\Livewire\Hr\Candidates\Index as CandidatesIndex;
@@ -36,7 +35,6 @@ Route::middleware(['auth', 'hr.access'])->prefix('hr')->name('hr.')->group(funct
     Route::prefix('candidates')->name('candidates.')->group(function () {
         Route::get('/', CandidatesIndex::class)->name('index');
         Route::get('/create', CandidatesCreate::class)->name('create');
-        Route::get('/upload', ResumeUpload::class)->name('upload');
         Route::get('/{candidateId}', CandidatesShow::class)->name('show');
         Route::get('/{candidateId}/edit', CandidatesEdit::class)->name('edit');
     });

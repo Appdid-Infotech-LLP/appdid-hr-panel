@@ -3,14 +3,59 @@
         <x-hr.back-button :fallback="route('hr.candidates.index')" />
         <div>
             <h2 class="text-xl font-semibold text-slate-900">Add New Candidate</h2>
-            <p class="text-sm text-slate-500">
-                Enter candidate details manually, or
-                <a href="{{ route('hr.candidates.upload') }}" wire:navigate class="font-medium text-brand-teal hover:text-brand-teal-dark">upload a resume instead</a>.
-            </p>
+            <p class="text-sm text-slate-500">Upload a resume to fill in the details automatically, or enter them manually.</p>
         </div>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
+    <form wire:submit="save" class="relative space-y-6">
+        {{-- Covers the whole form (and blocks clicks) while the resume uploads
+             and is read; wire:target="resume" stays active for both requests.
+             The spinner is sticky so it stays in view on this long form. --}}
+        <div wire:loading wire:target="resume" class="absolute inset-0 z-30 rounded-xl bg-white/70 backdrop-blur-[1px]">
+            <div class="sticky top-[40vh] flex flex-col items-center gap-3 py-6">
+                <svg class="h-8 w-8 animate-spin text-brand-teal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4Z"></path>
+                </svg>
+                <p class="text-sm font-medium text-slate-700">Reading resume and filling in details...</p>
+            </div>
+        </div>
+
+        <x-hr.section-card title="Resume" subtitle="PDF, DOC or DOCX up to 5MB — details are read as soon as it uploads">
+            @if ($resume)
+                <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <div class="flex min-w-0 items-center gap-3 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                        </svg>
+                        <span class="truncate font-medium text-slate-700">{{ $resume->getClientOriginalName() }}</span>
+                        <span class="shrink-0 text-slate-400">({{ number_format($resume->getSize() / 1024, 0) }} KB)</span>
+                    </div>
+                    <button type="button" wire:click="removeResume" class="shrink-0 text-sm font-medium text-rose-500 hover:text-rose-600">Remove</button>
+                </div>
+            @else
+                {{-- The file input covers the whole box (invisible), so clicking
+                     and native drag-and-drop both work without any JS. --}}
+                <div class="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-brand-teal hover:bg-brand-teal-light/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                    </svg>
+                    <p class="mt-2 text-sm text-slate-600"><span class="font-medium text-brand-teal">Click to upload</span> or drag and drop</p>
+                    <input id="resume" type="file" wire:model="resume" class="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.doc,.docx">
+                </div>
+            @endif
+
+            @error('resume')
+                <p class="mt-3 text-sm text-red-500">{{ $message }}</p>
+            @enderror
+
+            @if ($resumeParseStatus === 'filled')
+                <p class="mt-3 text-sm text-emerald-600">Details were filled in from the resume — please review them before saving.</p>
+            @elseif ($resumeParseStatus === 'failed')
+                <p class="mt-3 text-sm text-amber-600">The resume was attached, but we couldn't read details from it. Please fill the form in manually.</p>
+            @endif
+        </x-hr.section-card>
+
         <x-hr.section-card title="Personal Details">
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 <x-hr.input name="firstName" label="First Name" required placeholder="Rahul" />
@@ -96,46 +141,10 @@
             </div>
         </x-hr.section-card>
 
-        <x-hr.section-card title="Links & Resume">
+        <x-hr.section-card title="Links">
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 <x-hr.input name="linkedinUrl" type="url" label="LinkedIn Profile" placeholder="https://linkedin.com/in/..." />
                 <x-hr.input name="portfolioUrl" type="url" label="Portfolio URL" placeholder="https://..." />
-            </div>
-
-            <div class="mt-5">
-                <label class="mb-1.5 block text-sm font-medium text-slate-700">Resume</label>
-
-                @if ($resume)
-                    <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div class="flex items-center gap-3 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                            </svg>
-                            <span class="font-medium text-slate-700">{{ $resume->getClientOriginalName() }}</span>
-                            <span class="text-slate-400">({{ number_format($resume->getSize() / 1024, 0) }} KB)</span>
-                        </div>
-                        <button type="button" wire:click="removeResume" class="text-sm font-medium text-rose-500 hover:text-rose-600">Remove</button>
-                    </div>
-                @else
-                    <label for="resume" class="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-brand-teal hover:bg-brand-teal-light/40">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
-                        </svg>
-                        <p class="mt-2 text-sm text-slate-600"><span class="font-medium text-brand-teal">Click to upload</span> or drag and drop</p>
-                        <p class="mt-1 text-xs text-slate-400">PDF, DOC or DOCX up to 5MB</p>
-                        <input id="resume" type="file" wire:model="resume" class="sr-only" accept=".pdf,.doc,.docx">
-                    </label>
-                @endif
-
-                <div wire:loading wire:target="resume" class="mt-2 text-xs text-slate-500">Uploading...</div>
-                @error('resume')
-                    <p class="mt-1.5 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-
-                <p class="mt-1.5 text-xs text-slate-400">
-                    This is a basic upload for attaching a resume here. For the full drag-and-drop upload flow, see
-                    <a href="{{ route('hr.candidates.upload') }}" wire:navigate class="text-brand-teal hover:text-brand-teal-dark">Upload Resume</a>.
-                </p>
             </div>
         </x-hr.section-card>
 

@@ -4,12 +4,15 @@ namespace App\Livewire\Hr\Candidates;
 
 use App\Helpers\FileUploader;
 use App\Models\Candidate;
+use App\Services\ResumeParser;
 use App\Support\CandidateOptions;
 use App\Support\Url;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('layouts.hr', ['title' => 'Add Candidate'])]
 class Create extends Component
@@ -81,45 +84,84 @@ class Create extends Component
 
     public string $notes = '';
 
-    public function mount(): void
+    // Set once a resume has been read: 'filled' (we found something) or
+    // 'failed' (couldn't be read/parsed), so the page can say which.
+    public string $resumeParseStatus = '';
+
+    /**
+     * Runs as soon as a resume finishes uploading: read it and pre-fill the
+     * form, so HR doesn't need a separate upload step before this page.
+     * Only blank fields are filled, so anything already typed is kept.
+     */
+    public function updatedResume(): void
     {
-        $pending = session()->pull('pending_resume');
+        $this->resumeParseStatus = '';
 
-        if (! $pending) {
+        if (! $this->resume) {
             return;
         }
 
-        $file = TemporaryUploadedFile::createFromLivewire($pending['filename']);
+        try {
+            $this->validateOnly('resume');
+        } catch (ValidationException $e) {
+            $this->resume = null;
 
-        // The temp file may have been cleaned up since it was uploaded on the
-        // /candidates/upload step, so don't attach a reference to a file that
-        // no longer exists.
-        if (! $file->exists()) {
-            session()->flash('warning', 'The uploaded resume has expired. Please attach it again.');
-
-            return;
+            throw $e;
         }
 
-        $this->resume = $file;
+        try {
+            $data = app(ResumeParser::class)->parse($this->resume);
+        } catch (Throwable $e) {
+            Log::error('Resume parsing failed: '.$e->getMessage());
+            $data = [];
+        }
 
-        $data = $pending['data'] ?? [];
-        $this->firstName = $data['first_name'] ?? $this->firstName;
-        $this->lastName = $data['last_name'] ?? $this->lastName;
-        $this->email = $data['email'] ?? $this->email;
-        $this->phone = $data['phone'] ?? $this->phone;
-        $this->location = $data['location'] ?? $this->location;
-        $this->applyParsedQualification($data['highest_qualification'] ?? null);
-        $this->college = $data['college'] ?? $this->college;
+        $this->resumeParseStatus = $this->applyParsedData($data) ? 'filled' : 'failed';
+    }
 
-        if (isset($data['experience_years'])) {
+    /**
+     * @return bool whether anything was actually filled in
+     */
+    private function applyParsedData(array $data): bool
+    {
+        $filled = false;
+
+        $fill = function (string $property, string $key) use ($data, &$filled): void {
+            $value = $data[$key] ?? null;
+
+            if ($this->{$property} === '' && is_scalar($value) && trim((string) $value) !== '') {
+                $this->{$property} = trim((string) $value);
+                $filled = true;
+            }
+        };
+
+        $fill('firstName', 'first_name');
+        $fill('lastName', 'last_name');
+        $fill('email', 'email');
+        $fill('phone', 'phone');
+        $fill('location', 'location');
+        $fill('college', 'college');
+        $fill('currentCompany', 'current_company');
+        $fill('currentDesignation', 'current_designation');
+        $fill('linkedinUrl', 'linkedin_url');
+        $fill('portfolioUrl', 'portfolio_url');
+
+        if ($this->highestQualification === '' && ! empty($data['highest_qualification'])) {
+            $this->applyParsedQualification((string) $data['highest_qualification']);
+            $filled = true;
+        }
+
+        if ($this->experienceYears === '' && $this->experienceMonths === '' && isset($data['experience_years'])) {
             $this->applyParsedExperience((float) $data['experience_years']);
+            $filled = true;
         }
 
-        $this->currentCompany = $data['current_company'] ?? $this->currentCompany;
-        $this->currentDesignation = $data['current_designation'] ?? $this->currentDesignation;
-        $this->skills = $data['skills'] ?? $this->skills;
-        $this->linkedinUrl = $data['linkedin_url'] ?? $this->linkedinUrl;
-        $this->portfolioUrl = $data['portfolio_url'] ?? $this->portfolioUrl;
+        if ($this->skills === [] && ! empty($data['skills']) && is_array($data['skills'])) {
+            $this->skills = array_values(array_filter($data['skills'], 'is_string'));
+            $filled = true;
+        }
+
+        return $filled;
     }
 
     /**
@@ -226,6 +268,7 @@ class Create extends Component
     public function removeResume(): void
     {
         $this->resume = null;
+        $this->resumeParseStatus = '';
     }
 
     public function save()

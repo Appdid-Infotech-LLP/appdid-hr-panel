@@ -155,8 +155,23 @@
 }
 
 /* Multiple / tags (e.g. skills) */
+/* Flex so chips and the inline search box (with its placeholder) sit
+   vertically centred; select2's own margins/padding assume a shorter field.
+   `display: contents` lets each chip be a flex item of the field itself. */
+.select2-container.select2-container--default .select2-selection--multiple {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0.125rem 0.75rem 0.125rem 0.5rem;
+}
+
 .select2-container.select2-container--default .select2-selection--multiple .select2-selection__rendered {
-    padding: 0.1875rem 0.5rem;
+    display: contents;
+}
+
+.select2-container.select2-container--default .select2-selection--multiple .select2-search--inline {
+    display: flex;
+    flex: 1 1 auto;
 }
 
 .select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice {
@@ -165,14 +180,30 @@
     padding: 0.125rem 0.5rem;
 }
 
+/* select2 4.1 absolutely positions the "×" at the chip's left edge (with a
+   divider) and relies on the chip's padding-left to clear it — the padding
+   above removes that space, so put the button back in normal flow instead. */
 .select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    @apply text-brand-teal/60 hover:text-brand-teal;
+    @apply text-brand-teal/60 hover:bg-transparent hover:text-brand-teal;
+    position: static;
+    border: 0;
+    padding: 0;
     margin-right: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    background: transparent;
+}
+
+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+    padding: 0;
 }
 
 .select2-container.select2-container--default .select2-selection--multiple .select2-search__field {
-    @apply text-sm text-slate-700;
-    margin-top: 0.3125rem;
+    @apply text-sm text-slate-700 placeholder:text-slate-400;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    margin: 0.3125rem 0 0.3125rem 0.25rem;
+    padding: 0;
 }
 
 /*

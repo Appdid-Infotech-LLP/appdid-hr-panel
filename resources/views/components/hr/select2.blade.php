@@ -111,6 +111,15 @@
                         const wanted = next === null || next === undefined ? (multiple ? [] : '') : next;
 
                         if (JSON.stringify(current ?? (multiple ? [] : '')) !== JSON.stringify(wanted)) {
+                            // A server-filled value (e.g. a skill read from a
+                            // resume) may not be one of the rendered options —
+                            // add it, or select2 would silently ignore it.
+                            [].concat(wanted).forEach((v) => {
+                                if (v !== '' && v !== null && !$(el).find('option').filter((_, o) => o.value === String(v)).length) {
+                                    $(el).append(new Option(v, v));
+                                }
+                            });
+
                             $(el).val(wanted === '' ? null : wanted).trigger('change.select2');
                         }
                     }));
