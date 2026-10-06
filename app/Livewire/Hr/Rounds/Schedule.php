@@ -94,7 +94,7 @@ class Schedule extends Component
     /**
      * Scheduling the next round means the previous one is over, so mark the
      * candidate's most recently added round Completed. Rounds already in a
-     * final state (Completed, Cancelled, No Show, Rescheduled) are left as
+     * final state (Completed, Cancelled, No Show) are left as
      * they are. Must run before the new round is created, or it would pick
      * that one up.
      */
@@ -110,7 +110,6 @@ class Schedule extends Component
             RoundStatus::Completed->value,
             RoundStatus::Cancelled->value,
             RoundStatus::NoShow->value,
-            RoundStatus::Rescheduled->value,
         ];
 
         if (in_array(RoundStatusResolver::effective($previous), $finalStatuses, true)) {
