@@ -136,7 +136,15 @@
                                             </svg>
                                         </a>
 
-                                        <details class="relative">
+                                        {{--
+                                            <details>/<summary> dropdown. The panel is `fixed`, not
+                                            `absolute`, and positioned by the script below: the table's
+                                            horizontal scroll wrapper implicitly clips vertically too
+                                            (setting overflow-x alone makes overflow-y auto), which
+                                            would otherwise cut off the panel for rows near the bottom.
+                                            Same fix as the Candidates page.
+                                        --}}
+                                        <details class="round-row-menu relative">
                                             <summary
                                                 class="flex h-8 w-8 list-none items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 [&::-webkit-details-marker]:hidden">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
@@ -148,7 +156,7 @@
                                             </summary>
 
                                             <div
-                                                class="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                                class="round-row-menu-panel fixed z-50 max-h-80 w-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
                                                 @if (!in_array($round['status'], ['Completed', 'Cancelled'], true))
                                                     <button type="button"
                                                         wire:click="openRoundConfirmation({{ $round['id'] }}, 'complete')"
@@ -205,3 +213,65 @@
         </x-slot:footer>
     </x-hr.modal>
 </div>
+
+@script
+<script>
+    const root = $wire.$el;
+
+    const positionMenuPanel = (details) => {
+        const summary = details.querySelector('summary');
+        const panel = details.querySelector('.round-row-menu-panel');
+
+        if (!summary || !panel) {
+            return;
+        }
+
+        const anchor = summary.getBoundingClientRect();
+        const margin = 8;
+
+        let left = anchor.right - panel.offsetWidth;
+        left = Math.min(Math.max(left, margin), window.innerWidth - panel.offsetWidth - margin);
+
+        let top = anchor.bottom + 4;
+        if (top + panel.offsetHeight > window.innerHeight - margin) {
+            top = anchor.top - panel.offsetHeight - 4;
+        }
+
+        panel.style.left = `${left}px`;
+        panel.style.top = `${top}px`;
+    };
+
+    const closeOpenRowMenus = (except = null) => {
+        if (!document.body.contains(root)) {
+            return;
+        }
+
+        root.querySelectorAll('details.round-row-menu[open]').forEach((details) => {
+            if (details !== except) {
+                details.open = false;
+            }
+        });
+    };
+
+    // 'toggle' doesn't bubble, but it still passes through the capture
+    // phase on its way down to the <details> element, so one capture-phase
+    // listener on the component root catches every row's menu.
+    root.addEventListener('toggle', (event) => {
+        const details = event.target;
+
+        if (!details.matches || !details.matches('details.round-row-menu') || !details.open) {
+            return;
+        }
+
+        closeOpenRowMenus(details);
+        positionMenuPanel(details);
+    }, true);
+
+    // The panel is `fixed`, so it won't track the table or the page
+    // scrolling underneath it — close it rather than let it drift away
+    // from the row it belongs to.
+    root.addEventListener('scroll', () => closeOpenRowMenus(), true);
+    window.addEventListener('scroll', () => closeOpenRowMenus(), true);
+    window.addEventListener('resize', () => closeOpenRowMenus());
+</script>
+@endscript
