@@ -16,6 +16,11 @@
     --color-brand-ink: #0c2e2d;
 }
 
+/* Alpine: hide x-cloak'd elements until Alpine has initialised them. */
+[x-cloak] {
+    display: none !important;
+}
+
 /*
  * select2 (x-hr.select2) themed to match the project's native form controls:
  * same height, border, radius and teal focus ring as the <input>/<select>s,
