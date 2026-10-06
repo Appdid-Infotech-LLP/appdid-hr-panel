@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Hr\Rounds;
 
+use App\Enums\RoundStatus;
 use App\Enums\RoundType;
+use App\Jobs\SendRoundScheduledEmail;
 use App\Models\Candidate;
 use App\Models\CandidateRound;
 use App\Services\GoogleCalendarService;
 use App\Support\RoundOptions;
+use App\Support\RoundStatusResolver;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -88,6 +91,35 @@ class Schedule extends Component
         ];
     }
 
+    /**
+     * Scheduling the next round means the previous one is over, so mark the
+     * candidate's most recently added round Completed. Rounds already in a
+     * final state (Completed, Cancelled, No Show, Rescheduled) are left as
+     * they are. Must run before the new round is created, or it would pick
+     * that one up.
+     */
+    protected function completePreviousRound(Candidate $candidate): void
+    {
+        $previous = $candidate->rounds()->with('candidate')->latest('id')->first();
+
+        if (! $previous) {
+            return;
+        }
+
+        $finalStatuses = [
+            RoundStatus::Completed->value,
+            RoundStatus::Cancelled->value,
+            RoundStatus::NoShow->value,
+            RoundStatus::Rescheduled->value,
+        ];
+
+        if (in_array(RoundStatusResolver::effective($previous), $finalStatuses, true)) {
+            return;
+        }
+
+        $previous->update(['status' => RoundStatus::Completed->value]);
+    }
+
     public function scheduleRound()
     {
         $this->validate();
@@ -95,6 +127,8 @@ class Schedule extends Component
         $candidate = Candidate::findOrFail($this->candidateId);
 
         [$interviewerType, $interviewerId] = explode(':', $this->interviewer, 2);
+
+        $this->completePreviousRound($candidate);
 
         $round = $candidate->rounds()->create([
             'type' => $this->roundType,
@@ -117,6 +151,8 @@ class Schedule extends Component
 
             session()->flash('warning', 'Round scheduled, but the calendar invite could not be created. You can retry from the round\'s edit page.');
         }
+
+        SendRoundScheduledEmail::dispatch($round);
 
         session()->flash('success', 'Round scheduled successfully.');
 
