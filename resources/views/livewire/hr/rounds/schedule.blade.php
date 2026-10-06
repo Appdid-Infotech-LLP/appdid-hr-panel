@@ -67,7 +67,12 @@
                 <x-hr.select2 name="interviewer" label="Interviewer" :options="$this->interviewers()" :value="$interviewer"
                     placeholder="Select interviewer" />
 
-                <x-hr.textarea name="notes" label="Notes" placeholder="Anything the interviewer should know..."
+                <x-hr.textarea name="notes" label="Notes" placeholder="e.g. Please keep your resume handy..."
+                    hint="Included in the email and calendar invite sent to the candidate — don't put internal comments here."
+                    hint-icon="mail" :rows="3" />
+
+                <x-hr.textarea name="feedback" label="Feedback" placeholder="Interviewer's internal feedback..."
+                    hint="Internal only — never included in the email or calendar invite." hint-icon="lock"
                     :rows="3" />
             </div>
         </x-hr.section-card>

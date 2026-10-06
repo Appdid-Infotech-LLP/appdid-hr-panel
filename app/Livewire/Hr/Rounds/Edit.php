@@ -49,6 +49,8 @@ class Edit extends Component
 
     public string $notes = '';
 
+    public string $feedback = '';
+
     public string $calendarStatus = 'Not Synced';
 
     public ?string $calendarEventId = null;
@@ -77,6 +79,7 @@ class Edit extends Component
         $this->interviewer = "{$round->interviewer_type}:{$round->interviewer_id}";
         $this->status = $this->initialStatus = RoundStatusResolver::effective($round);
         $this->notes = (string) $round->notes;
+        $this->feedback = (string) $round->feedback;
         $this->calendarEventId = $round->calendar_event_id;
         $this->calendarStatus = $round->calendar_event_id ? 'Synced' : 'Not Synced';
     }
@@ -120,6 +123,7 @@ class Edit extends Component
             'interviewer' => ['required', Rule::in(array_keys(RoundOptions::interviewers()))],
             'status' => ['required', Rule::enum(RoundStatus::class)],
             'notes' => ['nullable', 'string', 'max:255'],
+            'feedback' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
@@ -222,6 +226,7 @@ class Edit extends Component
             'interviewer_type' => $interviewerType,
             'interviewer_id' => $interviewerId,
             'notes' => $this->notes,
+            'feedback' => $this->feedback !== '' ? $this->feedback : null,
         ];
 
         // A round with no explicit status derives it from the candidate's

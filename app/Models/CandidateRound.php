@@ -15,6 +15,7 @@ class CandidateRound extends Model
         'interviewer_type',
         'interviewer_id',
         'notes',
+        'feedback',
         'status',
         'calendar_event_id',
     ];

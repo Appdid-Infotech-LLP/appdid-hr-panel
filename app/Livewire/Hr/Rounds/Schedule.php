@@ -34,6 +34,8 @@ class Schedule extends Component
 
     public string $notes = '';
 
+    public string $feedback = '';
+
     public function candidates(): array
     {
         return Candidate::all()
@@ -88,6 +90,8 @@ class Schedule extends Component
                 },
             ],
             'interviewer' => ['required', Rule::in(array_keys(RoundOptions::interviewers()))],
+            'notes' => ['nullable', 'string', 'max:255'],
+            'feedback' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
@@ -136,6 +140,7 @@ class Schedule extends Component
             'interviewer_type' => $interviewerType,
             'interviewer_id' => $interviewerId,
             'notes' => $this->notes,
+            'feedback' => $this->feedback !== '' ? $this->feedback : null,
         ]);
 
         try {
