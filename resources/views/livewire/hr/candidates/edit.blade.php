@@ -1,10 +1,6 @@
 <div class="space-y-6">
     <div class="flex items-center gap-3">
-        <a href="{{ route('hr.candidates.show', $candidateId) }}" wire:navigate class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-        </a>
+        <x-hr.back-button :fallback="route('hr.candidates.show', $candidateId)" />
         <div>
             <h2 class="text-xl font-semibold text-slate-900">Edit Candidate</h2>
             <p class="text-sm text-slate-500">Update {{ $firstName }} {{ $lastName }}'s details.</p>

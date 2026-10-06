@@ -45,5 +45,42 @@
     <livewire:hr.emails.send-candidate-email />
 
     @livewireScripts
+
+    {{--
+        Back buttons (<x-hr.back-button>) go to the previous page. history.back()
+        is only safe once the user has navigated inside the app at least once
+        in this tab — otherwise it could leave the site — so count forward
+        navigations and let the link's own (fallback) href handle the rest.
+        data-navigate-once: wire:navigate re-runs body scripts on every page
+        swap, which would stack up duplicate listeners.
+    --}}
+    <script data-navigate-once>
+        if (!window.hrBackButtonReady) {
+            window.hrBackButtonReady = true;
+            window.hrForwardNavigations = 0;
+
+            document.addEventListener('livewire:navigate', (event) => {
+                if (!event.detail?.history) {
+                    window.hrForwardNavigations++;
+                }
+            });
+
+            // Capture phase + stopPropagation so wire:navigate's own handler
+            // on the link never starts a second navigation to the fallback.
+            document.addEventListener('click', (event) => {
+                const link = event.target.closest?.('a[data-hr-back]');
+
+                if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                    return;
+                }
+
+                if (window.hrForwardNavigations > 0 && window.history.length > 1) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    window.history.back();
+                }
+            }, true);
+        }
+    </script>
 </body>
 </html>
