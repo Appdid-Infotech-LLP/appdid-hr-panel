@@ -82,7 +82,7 @@
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <x-hr.select2 name="interviewer" label="Interviewer" :options="$this->interviewers()" :value="$interviewer" placeholder="Select interviewer" :disabled="$locked" />
-                    <x-hr.select name="status" label="Status" :options="$this->statuses()" placeholder="Select status" :disabled="$locked" />
+                    <x-hr.select2 name="status" label="Status" :options="$this->statuses()" :value="$status" placeholder="Select status" :disabled="$locked" />
                 </div>
 
                 <x-hr.textarea name="notes" label="Notes" placeholder="e.g. Please keep your resume handy..."

@@ -40,29 +40,11 @@
                     class="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
             </div>
 
-            <select wire:model.live="typeFilter"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Round Types</option>
-                @foreach ($this->types() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="typeFilter" :options="$this->types()" :value="$typeFilter" placeholder="All Round Types" />
 
-            <select wire:model.live="statusFilter"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Statuses</option>
-                @foreach ($this->statuses() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="statusFilter" :options="$this->statuses()" :value="$statusFilter" placeholder="All Statuses" />
 
-            <select wire:model.live="modeFilter"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Modes</option>
-                @foreach ($this->modes() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="modeFilter" :options="$this->modes()" :value="$modeFilter" placeholder="All Modes" />
         </div>
 
         @if ($this->hasActiveFilters())

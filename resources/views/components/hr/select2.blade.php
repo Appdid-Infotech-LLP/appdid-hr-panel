@@ -1,4 +1,4 @@
-@props(['name', 'label' => null, 'options' => [], 'value' => null, 'placeholder' => 'Select...', 'multiple' => false, 'tags' => false, 'disabled' => false])
+@props(['name', 'label' => null, 'options' => [], 'value' => null, 'placeholder' => 'Select...', 'multiple' => false, 'tags' => false, 'disabled' => false, 'required' => false, 'nullable' => false])
 
 @php
     $id = 'select2-' . str()->random(8);
@@ -13,9 +13,14 @@
     }
 @endphp
 
-<div>
+<div {{ $attributes }}>
     @if ($label)
-        <label for="{{ $id }}" class="mb-1.5 block text-sm font-medium text-slate-700">{{ $label }}</label>
+        <label for="{{ $id }}" class="mb-1.5 block text-sm font-medium text-slate-700">
+            {{ $label }}
+            @if ($required)
+                <span class="text-rose-500">*</span>
+            @endif
+        </label>
     @endif
 
     {{--
@@ -60,14 +65,50 @@
                     // (and drops the clear "x") from the start.
                     $(el).prop('disabled', disabled);
 
-                    $(el).select2({ width: '100%', placeholder: @js($placeholder), allowClear: ! @js($multiple) && ! disabled, tags: @js($tags) });
+                    const multiple = @js((bool) $multiple);
+                    const nullable = @js((bool) $nullable);
+
+                    // The search box only earns its space on longer lists —
+                    // a 3-item dropdown (modes, statuses…) doesn't need one.
+                    $(el).select2({
+                        width: '100%',
+                        placeholder: @js($placeholder),
+                        allowClear: ! multiple && ! disabled,
+                        tags: @js($tags),
+                        minimumResultsForSearch: multiple || @js((bool) $tags) ? 0 : 8,
+                    });
 
                     if (initial !== null && initial !== undefined) {
                         $(el).val(initial).trigger('change.select2');
                     }
 
+                    // Clearing gives null; the Livewire property is usually a
+                    // plain string/array, which can't hold null.
                     $(el).on('change', function () {
-                        @this.set('{{ $name }}', $(this).val());
+                        let selected = $(this).val();
+
+                        if (selected === null || selected === undefined) {
+                            selected = multiple ? [] : (nullable ? null : '');
+                        }
+
+                        @this.set('{{ $name }}', selected);
+                    });
+
+                    // Server -> select: a reset (e.g. "Clear all filters") or a
+                    // value filled in server-side (e.g. from a parsed resume).
+                    // 'change.select2' only refreshes select2's own display, so
+                    // it doesn't echo back through the handler above.
+                    @this.$watch('{{ $name }}', (next) => {
+                        if (! document.body.contains(el)) {
+                            return;
+                        }
+
+                        const current = $(el).val();
+                        const wanted = next === null || next === undefined ? (multiple ? [] : '') : next;
+
+                        if (JSON.stringify(current ?? (multiple ? [] : '')) !== JSON.stringify(wanted)) {
+                            $(el).val(wanted === '' ? null : wanted).trigger('change.select2');
+                        }
                     });
                 }
 

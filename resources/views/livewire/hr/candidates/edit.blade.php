@@ -15,7 +15,7 @@
                 <x-hr.input name="email" type="email" label="Email" required />
                 <x-hr.input name="phone" label="Phone" required />
                 <x-hr.datepicker name="dateOfBirth" label="Date of Birth" :value="$dateOfBirth" :max-date="now()->subYears(16)->format('Y-m-d')" />
-                <x-hr.select name="gender" label="Gender" :options="$this->genders()" placeholder="Select gender" />
+                <x-hr.select2 name="gender" label="Gender" :options="$this->genders()" :value="$gender" placeholder="Select gender" />
                 <x-hr.select2 name="location" label="Current Location" :options="$this->locations()" :value="$location" placeholder="Select location" />
             </div>
 
@@ -26,7 +26,7 @@
 
         <x-hr.section-card title="Professional Details">
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-                <x-hr.select name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" placeholder="Select qualification" />
+                <x-hr.select2 name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" :value="$highestQualification" placeholder="Select qualification" />
                 <x-hr.input name="college" label="College / University" />
                 <x-hr.input name="experienceYears" type="number" label="Years of Experience" />
                 <x-hr.input name="currentCompany" label="Current Company" />
@@ -34,7 +34,7 @@
                 <div></div>
                 <x-hr.input name="currentSalary" label="Current Salary (₹ per annum)" />
                 <x-hr.input name="expectedSalary" label="Expected Salary (₹ per annum)" />
-                <x-hr.select name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" placeholder="Select notice period" />
+                <x-hr.select2 name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" :value="$noticePeriod" placeholder="Select notice period" />
             </div>
 
             <div class="mt-5">

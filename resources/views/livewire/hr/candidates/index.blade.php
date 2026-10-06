@@ -42,36 +42,24 @@
                 </div>
             </div>
 
-            <select wire:model.live="stageFilter" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Stages</option>
-                @foreach ($this->stages() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="stageFilter" :options="$this->stages()" :value="$stageFilter" placeholder="All Stages" />
 
-            <select wire:model.live="experienceFilter" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">Any Experience</option>
-                <option value="0-2">0 - 2 years</option>
-                <option value="2-5">2 - 5 years</option>
-                <option value="5-10">5 - 10 years</option>
-                <option value="10+">10+ years</option>
-            </select>
+            <x-hr.select2 name="experienceFilter" :value="$experienceFilter" placeholder="Any Experience" :options="[
+                '0-2' => '0 - 2 years',
+                '2-5' => '2 - 5 years',
+                '5-10' => '5 - 10 years',
+                '10+' => '10+ years',
+            ]" />
 
-            <select wire:model.live="locationFilter" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Locations</option>
-                @foreach ($this->locations() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="locationFilter" :options="$this->locations()" :value="$locationFilter" placeholder="All Locations" />
         </div>
 
         <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <select wire:model.live="dateFilter" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">Added Any Time</option>
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-            </select>
+            <x-hr.select2 name="dateFilter" :value="$dateFilter" placeholder="Added Any Time" class="w-52" :options="[
+                '7' => 'Last 7 days',
+                '30' => 'Last 30 days',
+                '90' => 'Last 90 days',
+            ]" />
 
             @if ($this->hasActiveFilters())
                 <button type="button" wire:click="clearFilters" class="text-sm font-medium text-slate-500 hover:text-slate-700">

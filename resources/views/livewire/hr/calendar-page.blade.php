@@ -53,21 +53,9 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-            <select wire:model.live="typeFilter"
-                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Round Types</option>
-                @foreach ($this->types() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="typeFilter" :options="$this->types()" :value="$typeFilter" placeholder="All Round Types" class="w-48" />
 
-            <select wire:model.live="modeFilter"
-                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
-                <option value="">All Modes</option>
-                @foreach ($this->modes() as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+            <x-hr.select2 name="modeFilter" :options="$this->modes()" :value="$modeFilter" placeholder="All Modes" class="w-40" />
 
             @if ($this->hasActiveFilters())
                 <button type="button" wire:click="clearFilters" class="text-sm font-medium text-slate-500 hover:text-slate-700">

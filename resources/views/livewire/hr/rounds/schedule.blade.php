@@ -18,10 +18,10 @@
         <x-hr.section-card>
             <div class="space-y-5">
                 <x-hr.select2 name="candidateId" label="Candidate" :options="$this->candidates()" :value="$candidateId"
-                    placeholder="Select candidate" />
+                    placeholder="Select candidate" nullable />
 
-                <x-hr.select name="roundType" label="Round" :options="$this->roundTypes()" placeholder="Select round type"
-                    required />
+                <x-hr.select2 name="roundType" label="Round" :options="$this->roundTypes()" :value="$roundType"
+                    placeholder="Select round type" required />
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <x-hr.datepicker name="date" label="Date" :value="$date" />

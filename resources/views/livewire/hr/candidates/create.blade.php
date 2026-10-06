@@ -18,7 +18,7 @@
                 <x-hr.input name="email" type="email" label="Email" required placeholder="rahul.sharma@example.com" />
                 <x-hr.input name="phone" label="Phone" required placeholder="+91 98765 43210" />
                 <x-hr.datepicker name="dateOfBirth" label="Date of Birth" :value="$dateOfBirth" :max-date="now()->subYears(16)->format('Y-m-d')" />
-                <x-hr.select name="gender" label="Gender" :options="$this->genders()" placeholder="Select gender" />
+                <x-hr.select2 name="gender" label="Gender" :options="$this->genders()" :value="$gender" placeholder="Select gender" />
                 <x-hr.select2 name="location" label="Current Location" :options="$this->locations()" :value="$location" placeholder="Select location" />
             </div>
 
@@ -30,7 +30,7 @@
         <x-hr.section-card title="Professional Details">
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 <div>
-                    <x-hr.select name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" placeholder="Select qualification" />
+                    <x-hr.select2 name="highestQualification" label="Highest Qualification" :options="$this->qualifications()" :value="$highestQualification" placeholder="Select qualification" />
 
                     @if ($highestQualification === 'Other')
                         <div class="mt-2">
@@ -92,7 +92,7 @@
             <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 <x-hr.input name="currentSalary" label="Current Salary (₹ per annum)" placeholder="e.g. 14,00,000" />
                 <x-hr.input name="expectedSalary" label="Expected Salary (₹ per annum)" placeholder="e.g. 20,00,000" />
-                <x-hr.select name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" placeholder="Select notice period" />
+                <x-hr.select2 name="noticePeriod" label="Notice Period" :options="$this->noticePeriods()" :value="$noticePeriod" placeholder="Select notice period" />
             </div>
         </x-hr.section-card>
 
