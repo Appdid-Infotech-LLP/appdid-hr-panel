@@ -135,7 +135,17 @@
                                         stroke-width="2" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
-                                    {{ $candidate['scheduled_label'] }}
+                                    <span class="min-w-0 flex-1 truncate">{{ $candidate['scheduled_label'] }}</span>
+
+                                    @if ($candidate['can_edit_round'])
+                                        <a href="{{ route('hr.rounds.edit', ['candidateId' => $candidate['id'], 'roundType' => $column['stage']]) }}" wire:navigate
+                                            draggable="false" title="Edit round"
+                                            class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-brand-teal hover:bg-white/70">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+                                            </svg>
+                                        </a>
+                                    @endif
                                 </div>
                             @endif
                         </div>

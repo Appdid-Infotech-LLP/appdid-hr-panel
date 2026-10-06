@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Hr;
 
+use App\Enums\RoundStatus;
 use App\Enums\RoundType;
 use App\Models\Candidate;
 use App\Support\CandidateOptions;
+use App\Support\RoundStatusResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -66,7 +68,7 @@ class Pipeline extends Component
         $search = trim($this->search);
 
         return Candidate::query()
-            ->with(['rounds:id,candidate_id,type,schedule_at'])
+            ->with(['rounds:id,candidate_id,type,schedule_at,status'])
             ->when($search !== '', fn (Builder $query) => $query->where(function (Builder $query) use ($search): void {
                 $query->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%");
@@ -100,6 +102,20 @@ class Pipeline extends Component
                                 ? $candidate->rounds->where('type', $candidate->current_stage)->sortByDesc('schedule_at')->first()
                                 : null;
 
+                            // Only a round that's still live can be edited — a
+                            // Completed/Cancelled one is history. (effective()
+                            // reads $round->candidate, so hand it the one we have.)
+                            $canEditRound = false;
+
+                            if ($matchingRound) {
+                                $matchingRound->setRelation('candidate', $candidate);
+                                $canEditRound = ! in_array(
+                                    RoundStatusResolver::effective($matchingRound),
+                                    [RoundStatus::Completed->value, RoundStatus::Cancelled->value],
+                                    true,
+                                );
+                            }
+
                             return [
                                 'id' => $candidate->id,
                                 'name' => trim("{$candidate->first_name} {$candidate->last_name}"),
@@ -109,6 +125,7 @@ class Pipeline extends Component
                                 'location' => $candidate->location,
                                 'missing_round' => $isRoundStage && ! $matchingRound,
                                 'scheduled_label' => $matchingRound?->schedule_at->format('M j, g:i A'),
+                                'can_edit_round' => $canEditRound,
                             ];
                         })
                         ->values()
