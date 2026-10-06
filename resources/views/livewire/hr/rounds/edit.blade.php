@@ -32,8 +32,15 @@
                         <label for="time" class="mb-1.5 block text-sm font-medium text-slate-700">Time</label>
                         <input
                             type="time" id="time" wire:model="time"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
+                            @class([
+                                'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2',
+                                'border-rose-300 focus:border-rose-400 focus:ring-rose-100' => $errors->has('time'),
+                                'border-slate-300 focus:border-brand-teal focus:ring-brand-teal/20' => ! $errors->has('time'),
+                            ])
                         >
+                        @error('time')
+                            <p class="mt-1.5 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -82,15 +89,20 @@
                             <span class="text-xs text-slate-400">Event ID: {{ $calendarEventId }}</span>
                         @endif
                     </div>
-                    <p class="mt-1.5 text-xs text-slate-400">
-                        Not connected yet — see the TODO in <code class="rounded bg-slate-100 px-1 py-0.5">Rounds\Edit::createCalendarEvent()</code>.
-                    </p>
+                    @unless ($this->calendarConnected())
+                        <p class="mt-1.5 text-xs text-amber-600">
+                            Your Google Calendar isn't connected.
+                            <a href="{{ route('hr.settings') }}" wire:navigate class="font-medium underline hover:text-amber-700">Connect it in Settings</a>
+                            to sync this round.
+                        </p>
+                    @endunless
                 </div>
 
                 <button
                     type="button" wire:click="createCalendarEvent"
-                    class="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                     wire:loading.attr="disabled" wire:target="createCalendarEvent"
+                    @disabled(! $this->calendarConnected())
                 >
                     <span wire:loading.remove wire:target="createCalendarEvent">{{ $calendarStatus === 'Synced' ? 'Resync Event' : 'Add to Google Calendar' }}</span>
                     <span wire:loading wire:target="createCalendarEvent">Syncing...</span>
