@@ -28,7 +28,7 @@
 
     {{-- Filters --}}
     <div class="rounded-xl border border-slate-200 bg-white p-4">
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div class="relative">
                 <svg xmlns="http://www.w3.org/2000/svg"
                     class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -39,6 +39,10 @@
                 <input type="search" wire:model.live.debounce.400ms="search" placeholder="Search by candidate name..."
                     class="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20">
             </div>
+
+            <x-hr.select2 name="candidateFilter" :options="$this->candidates()" :value="$candidateFilter" placeholder="All Candidates" />
+
+            <x-hr.date-range from-name="dateFrom" to-name="dateTo" :from="$dateFrom" :to="$dateTo" placeholder="Any date" />
 
             <x-hr.select2 name="typeFilter" :options="$this->types()" :value="$typeFilter" placeholder="All Round Types" />
 

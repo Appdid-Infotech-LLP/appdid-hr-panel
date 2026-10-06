@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Hr\Rounds;
 
+use App\Models\Candidate;
 use App\Models\CandidateRound;
 use App\Support\RoundOptions;
 use App\Support\RoundStatusResolver;
@@ -19,6 +20,15 @@ class ListRounds extends Component
 
     #[Url]
     public string $search = '';
+
+    #[Url]
+    public string $candidateFilter = '';
+
+    #[Url]
+    public string $dateFrom = '';
+
+    #[Url]
+    public string $dateTo = '';
 
     #[Url]
     public string $typeFilter = '';
@@ -69,6 +79,20 @@ class ListRounds extends Component
             });
         }
 
+        if ($this->candidateFilter !== '') {
+            $query->where('candidate_rounds.candidate_id', (int) $this->candidateFilter);
+        }
+
+        // Inclusive on both ends; a lone "from" or "to" is an open-ended range.
+        // Anything that isn't a real Y-m-d (a hand-edited URL) is ignored.
+        if ($this->validDate($this->dateFrom)) {
+            $query->whereDate('candidate_rounds.schedule_at', '>=', $this->dateFrom);
+        }
+
+        if ($this->validDate($this->dateTo)) {
+            $query->whereDate('candidate_rounds.schedule_at', '<=', $this->dateTo);
+        }
+
         if ($this->typeFilter !== '') {
             $query->where('candidate_rounds.type', $this->typeFilter);
         }
@@ -87,6 +111,28 @@ class ListRounds extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function updatingCandidateFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    protected function validDate(string $value): bool
+    {
+        $date = \DateTime::createFromFormat('Y-m-d', $value);
+
+        return $date !== false && $date->format('Y-m-d') === $value;
     }
 
     public function updatingTypeFilter(): void
@@ -120,13 +166,28 @@ class ListRounds extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'typeFilter', 'statusFilter', 'modeFilter']);
+        $this->reset(['search', 'candidateFilter', 'dateFrom', 'dateTo', 'typeFilter', 'statusFilter', 'modeFilter']);
         $this->resetPage();
     }
 
     public function hasActiveFilters(): bool
     {
-        return $this->search !== '' || $this->typeFilter !== '' || $this->statusFilter !== '' || $this->modeFilter !== '';
+        return $this->search !== '' || $this->candidateFilter !== '' || $this->dateFrom !== '' || $this->dateTo !== '' || $this->typeFilter !== '' || $this->statusFilter !== '' || $this->modeFilter !== '';
+    }
+
+    /**
+     * [candidate id => full name] for the filter dropdown — only candidates
+     * who actually have a round, since anyone else would just show an empty list.
+     */
+    public function candidates(): array
+    {
+        return Candidate::query()
+            ->whereHas('rounds')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name'])
+            ->mapWithKeys(fn (Candidate $candidate) => [$candidate->id => trim("{$candidate->first_name} {$candidate->last_name}")])
+            ->all();
     }
 
     public function types(): array
