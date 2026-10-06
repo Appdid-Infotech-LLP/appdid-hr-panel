@@ -98,7 +98,11 @@
                     // value filled in server-side (e.g. from a parsed resume).
                     // 'change.select2' only refreshes select2's own display, so
                     // it doesn't echo back through the handler above.
-                    @this.$watch('{{ $name }}', (next) => {
+                    //
+                    // On a wire:navigate page swap this script runs *before*
+                    // Livewire has registered the new page's components, so
+                    // the component can't be looked up yet — wait for it.
+                    whenComponentReady((component) => component.$watch('{{ $name }}', (next) => {
                         if (! document.body.contains(el)) {
                             return;
                         }
@@ -109,7 +113,21 @@
                         if (JSON.stringify(current ?? (multiple ? [] : '')) !== JSON.stringify(wanted)) {
                             $(el).val(wanted === '' ? null : wanted).trigger('change.select2');
                         }
-                    });
+                    }));
+                }
+
+                function whenComponentReady(callback, attempt = 0) {
+                    let component = null;
+
+                    try {
+                        component = @this;
+                    } catch (e) {}
+
+                    if (component) {
+                        callback(component);
+                    } else if (attempt < 60) {
+                        setTimeout(() => whenComponentReady(callback, attempt + 1), 50);
+                    }
                 }
 
                 if (window.jQuery && window.jQuery.fn.select2) {

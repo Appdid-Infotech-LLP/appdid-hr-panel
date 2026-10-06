@@ -74,7 +74,8 @@
                             return;
                         }
 
-                        const wanted = [@this.get(fromName), @this.get(toName)].filter(Boolean);
+                        const component = @this;
+                        const wanted = [component.get(fromName), component.get(toName)].filter(Boolean);
                         const current = picker.selectedDates.map((date) => picker.formatDate(date, 'Y-m-d'));
 
                         // A lone "from" (hand-edited URL) is shown as-is; our own
@@ -87,8 +88,27 @@
                         showClear(picker);
                     };
 
-                    @this.$watch(fromName, pullFromServer);
-                    @this.$watch(toName, pullFromServer);
+                    // On a wire:navigate page swap this script runs *before*
+                    // Livewire has registered the new page's components, so
+                    // the component can't be looked up yet — wait for it.
+                    whenComponentReady((component) => {
+                        component.$watch(fromName, pullFromServer);
+                        component.$watch(toName, pullFromServer);
+                    });
+                }
+
+                function whenComponentReady(callback, attempt = 0) {
+                    let component = null;
+
+                    try {
+                        component = @this;
+                    } catch (e) {}
+
+                    if (component) {
+                        callback(component);
+                    } else if (attempt < 60) {
+                        setTimeout(() => whenComponentReady(callback, attempt + 1), 50);
+                    }
                 }
 
                 if (window.flatpickr) {

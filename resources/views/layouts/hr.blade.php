@@ -48,33 +48,76 @@
 
     {{--
         Back buttons (<x-hr.back-button>) go to the previous page. history.back()
-        is only safe once the user has navigated inside the app at least once
-        in this tab — otherwise it could leave the site — so count forward
-        navigations and let the link's own (fallback) href handle the rest.
+        is only safe when there really is an earlier page of this app, otherwise
+        it could leave the site. That's the case once, in this tab, the user has
+        either navigated inside the app (wire:navigate's own events) or arrived
+        at a page from another page of the app (document.referrer). That fact is
+        kept in sessionStorage so it survives a reload — a reload resets the page
+        but not the browser history behind it. Otherwise the link's own
+        (fallback) href is followed.
+
+        wire:navigate starts its visit on mousedown/mouseup — *before* `click`
+        fires — so the mousedown has to be intercepted too, or it would already
+        be heading to the fallback by the time the click handler runs.
+
         data-navigate-once: wire:navigate re-runs body scripts on every page
         swap, which would stack up duplicate listeners.
     --}}
     <script data-navigate-once>
         if (!window.hrBackButtonReady) {
             window.hrBackButtonReady = true;
-            window.hrForwardNavigations = 0;
+
+            const STORAGE_KEY = 'hr:in-app-history';
+
+            // sessionStorage can throw (blocked storage, private modes) — then
+            // we just fall back to remembering for this page load only.
+            let inMemory = false;
+            const remember = () => {
+                inMemory = true;
+
+                try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+            };
+            const remembered = () => {
+                try { return inMemory || sessionStorage.getItem(STORAGE_KEY) === '1'; } catch (e) { return inMemory; }
+            };
 
             document.addEventListener('livewire:navigate', (event) => {
                 if (!event.detail?.history) {
-                    window.hrForwardNavigations++;
+                    remember();
                 }
             });
 
-            // Capture phase + stopPropagation so wire:navigate's own handler
-            // on the link never starts a second navigation to the fallback.
-            document.addEventListener('click', (event) => {
+            try {
+                const referrer = new URL(document.referrer);
+
+                if (referrer.origin === location.origin && referrer.href !== location.href) {
+                    remember();
+                }
+            } catch (e) {}
+
+            const canGoBack = () => window.history.length > 1 && remembered();
+
+            const backLinkFor = (event) => {
                 const link = event.target.closest?.('a[data-hr-back]');
 
+                // Plain left-click only: leave ctrl/cmd/shift/middle-click (new tab/window) alone.
                 if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-                    return;
+                    return null;
                 }
 
-                if (window.hrForwardNavigations > 0 && window.history.length > 1) {
+                return link;
+            };
+
+            // Capture phase + stopPropagation so wire:navigate's own handlers
+            // on the link never start a navigation to the fallback.
+            document.addEventListener('mousedown', (event) => {
+                if (backLinkFor(event) && canGoBack()) {
+                    event.stopPropagation();
+                }
+            }, true);
+
+            document.addEventListener('click', (event) => {
+                if (backLinkFor(event) && canGoBack()) {
                     event.preventDefault();
                     event.stopPropagation();
                     window.history.back();
