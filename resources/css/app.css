@@ -15,3 +15,162 @@
     --color-brand-teal-light: #e6f3f2;
     --color-brand-ink: #0c2e2d;
 }
+
+/*
+ * select2 (x-hr.select2) themed to match the project's native form controls:
+ * same height, border, radius and teal focus ring as the <input>/<select>s,
+ * so the two kinds of field sit next to each other without looking different.
+ * Selectors mirror select2's own (plus .select2-container) so they win over
+ * its stylesheet regardless of which CSS file Vite loads first.
+ */
+.select2-container.select2-container--default {
+    font-size: var(--text-sm);
+}
+
+/* Field */
+.select2-container.select2-container--default .select2-selection--single,
+.select2-container.select2-container--default .select2-selection--multiple {
+    @apply rounded-lg border border-slate-300 bg-white text-sm text-slate-700 transition-colors;
+    min-height: 2.375rem; /* matches an <input> with py-2 text-sm */
+    outline: none;
+}
+
+.select2-container.select2-container--default .select2-selection--single {
+    height: 2.375rem;
+}
+
+.select2-container.select2-container--default .select2-selection--single .select2-selection__rendered {
+    @apply text-slate-700;
+    line-height: calc(2.375rem - 2px);
+    padding-left: 0.75rem;
+    padding-right: 2.5rem;
+}
+
+.select2-container.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    @apply text-slate-400;
+}
+
+.select2-container.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: calc(2.375rem - 2px);
+    right: 0.5rem;
+}
+
+.select2-container.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--color-slate-400) transparent transparent;
+}
+
+.select2-container.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent var(--color-slate-400);
+}
+
+.select2-container.select2-container--default .select2-selection--single .select2-selection__clear {
+    @apply text-slate-400 hover:text-slate-600;
+    font-size: 1.125rem;
+    position: absolute;
+    right: 1.75rem; /* left of the arrow */
+    top: 0;
+    margin: 0;
+    height: calc(2.375rem - 2px);
+    line-height: calc(2.375rem - 2px);
+}
+
+/* Hover / focus / open — same ring as the other inputs */
+.select2-container.select2-container--default .select2-selection--single:hover,
+.select2-container.select2-container--default .select2-selection--multiple:hover {
+    @apply border-slate-400;
+}
+
+.select2-container.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container.select2-container--default.select2-container--open .select2-selection--multiple {
+    @apply border-brand-teal ring-2 ring-brand-teal/20;
+}
+
+.select2-container.select2-container--default.select2-container--open.select2-container--above .select2-selection--single,
+.select2-container.select2-container--default.select2-container--open.select2-container--below .select2-selection--single,
+.select2-container.select2-container--default.select2-container--open.select2-container--above .select2-selection--multiple,
+.select2-container.select2-container--default.select2-container--open.select2-container--below .select2-selection--multiple {
+    @apply rounded-lg;
+}
+
+/* Disabled */
+.select2-container.select2-container--default.select2-container--disabled .select2-selection--single,
+.select2-container.select2-container--default.select2-container--disabled .select2-selection--multiple {
+    @apply cursor-not-allowed border-slate-300 bg-slate-50;
+}
+
+.select2-container.select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered {
+    @apply text-slate-500;
+}
+
+/* Dropdown panel */
+.select2-container.select2-container--default .select2-dropdown {
+    @apply overflow-hidden rounded-lg border border-slate-200 bg-white text-sm shadow-lg;
+}
+
+.select2-container.select2-container--default.select2-container--open .select2-dropdown--below {
+    margin-top: 0.25rem;
+}
+
+.select2-container.select2-container--default.select2-container--open .select2-dropdown--above {
+    margin-bottom: 0.25rem;
+}
+
+.select2-container.select2-container--default .select2-search--dropdown {
+    @apply border-b border-slate-100;
+    padding: 0.5rem;
+}
+
+.select2-container.select2-container--default .select2-search--dropdown .select2-search__field {
+    @apply rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 outline-none;
+}
+
+.select2-container.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    @apply border-brand-teal ring-2 ring-brand-teal/20;
+}
+
+.select2-container.select2-container--default .select2-results__options {
+    padding: 0.25rem 0;
+}
+
+.select2-container.select2-container--default .select2-results__option {
+    @apply px-3.5 py-2 text-sm text-slate-700;
+}
+
+.select2-container.select2-container--default .select2-results__option--selected {
+    @apply bg-slate-100 font-medium text-slate-900;
+}
+
+.select2-container.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    @apply bg-brand-teal-light text-brand-teal;
+}
+
+.select2-container.select2-container--default .select2-results__option--disabled {
+    @apply text-slate-300;
+}
+
+.select2-container.select2-container--default .select2-results__message {
+    @apply text-slate-400;
+}
+
+/* Multiple / tags (e.g. skills) */
+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding: 0.1875rem 0.5rem;
+}
+
+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    @apply rounded-md border-0 bg-brand-teal-light text-xs font-medium text-brand-teal;
+    margin: 0.1875rem 0.25rem 0.1875rem 0;
+    padding: 0.125rem 0.5rem;
+}
+
+.select2-container.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    @apply text-brand-teal/60 hover:text-brand-teal;
+    margin-right: 0.25rem;
+}
+
+.select2-container.select2-container--default .select2-selection--multiple .select2-search__field {
+    @apply text-sm text-slate-700;
+    margin-top: 0.3125rem;
+}

@@ -1,4 +1,4 @@
-@props(['name', 'label' => null, 'options' => [], 'value' => null, 'placeholder' => 'Select...', 'multiple' => false, 'tags' => false])
+@props(['name', 'label' => null, 'options' => [], 'value' => null, 'placeholder' => 'Select...', 'multiple' => false, 'tags' => false, 'disabled' => false])
 
 @php
     $id = 'select2-' . str()->random(8);
@@ -54,7 +54,13 @@
                     const el = document.getElementById('{{ $id }}');
                     const initial = @js($value);
 
-                    $(el).select2({ width: '100%', placeholder: @js($placeholder), allowClear: ! @js($multiple), tags: @js($tags) });
+                    const disabled = @js((bool) $disabled);
+
+                    // Set before init so select2 renders its disabled look
+                    // (and drops the clear "x") from the start.
+                    $(el).prop('disabled', disabled);
+
+                    $(el).select2({ width: '100%', placeholder: @js($placeholder), allowClear: ! @js($multiple) && ! disabled, tags: @js($tags) });
 
                     if (initial !== null && initial !== undefined) {
                         $(el).val(initial).trigger('change.select2');

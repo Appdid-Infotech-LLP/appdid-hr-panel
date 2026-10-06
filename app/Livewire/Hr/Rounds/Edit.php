@@ -47,6 +47,10 @@ class Edit extends Component
     #[Locked]
     public string $originalScheduleAt = '';
 
+    /** The page this one was opened from — where Save/Cancel send the user back to. */
+    #[Locked]
+    public string $returnUrl = '';
+
     public string $notes = '';
 
     public string $feedback = '';
@@ -82,6 +86,30 @@ class Edit extends Component
         $this->feedback = (string) $round->feedback;
         $this->calendarEventId = $round->calendar_event_id;
         $this->calendarStatus = $round->calendar_event_id ? 'Synced' : 'Not Synced';
+        $this->returnUrl = $this->resolveReturnUrl();
+    }
+
+    /**
+     * The previous page (Pipeline, Rounds list, Calendar, candidate…), query
+     * string included so list filters survive the round trip. Falls back to
+     * the candidate's page when there's no usable previous page: opened
+     * directly, from another site, or from this very page.
+     */
+    protected function resolveReturnUrl(): string
+    {
+        $fallback = route('hr.candidates.show', $this->candidateId);
+        $previous = url()->previous($fallback);
+
+        $path = rawurldecode((string) parse_url($previous, PHP_URL_PATH));
+        $sameSite = parse_url($previous, PHP_URL_HOST) === request()->getHost();
+        $editPath = rawurldecode((string) parse_url(route('hr.rounds.edit', [$this->candidateId, $this->roundType]), PHP_URL_PATH));
+        $isThisPage = $path === $editPath;
+
+        if (! $sameSite || $isThisPage || str_starts_with($path, '/livewire')) {
+            return $fallback;
+        }
+
+        return $previous;
     }
 
     public function statuses(): array
@@ -92,6 +120,16 @@ class Edit extends Component
     public function interviewers(): array
     {
         return RoundOptions::interviewers();
+    }
+
+    /**
+     * A Completed round is history: everything but the feedback is read-only.
+     * Based on the status the page loaded with (not the dropdown's current
+     * value), so picking "Completed" mid-edit doesn't lock the form on you.
+     */
+    public function isLocked(): bool
+    {
+        return $this->initialStatus === RoundStatus::Completed->value;
     }
 
     public function calendarConnected(): bool
@@ -154,6 +192,10 @@ class Edit extends Component
 
     public function createCalendarEvent(): void
     {
+        if ($this->isLocked()) {
+            return;
+        }
+
         $round = CandidateRound::findOrFail($this->roundId);
 
         try {
@@ -180,8 +222,29 @@ class Edit extends Component
             && ! in_array($this->initialStatus, [RoundStatus::Completed->value, RoundStatus::Cancelled->value], true);
     }
 
+    /**
+     * Save path for a locked (Completed) round: only the feedback is written,
+     * whatever else the request carries.
+     */
+    protected function saveFeedbackOnly()
+    {
+        $this->validate(['feedback' => $this->rules()['feedback']]);
+
+        CandidateRound::findOrFail($this->roundId)->update([
+            'feedback' => $this->feedback !== '' ? $this->feedback : null,
+        ]);
+
+        session()->flash('success', 'Feedback saved.');
+
+        return redirect($this->returnUrl);
+    }
+
     public function updateRound()
     {
+        if ($this->isLocked()) {
+            return $this->saveFeedbackOnly();
+        }
+
         $this->validate();
 
         $round = CandidateRound::findOrFail($this->roundId);
@@ -198,6 +261,10 @@ class Edit extends Component
     public function confirmReschedule()
     {
         $this->showRescheduleConfirmation = false;
+
+        if ($this->isLocked()) {
+            return $this->saveFeedbackOnly();
+        }
 
         $this->validate();
 
@@ -265,7 +332,7 @@ class Edit extends Component
             session()->flash('warning', $warning);
         }
 
-        return redirect()->route('hr.candidates.show', $this->candidateId);
+        return redirect($this->returnUrl);
     }
 
     public function render()

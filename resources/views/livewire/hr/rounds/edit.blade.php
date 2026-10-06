@@ -7,6 +7,17 @@
         </div>
     </div>
 
+    @php($locked = $this->isLocked())
+
+    @if ($locked)
+        <div class="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </svg>
+            <p>This round is completed, so its details are locked. You can still add or update the feedback.</p>
+        </div>
+    @endif
+
     <form wire:submit="updateRound">
         <x-hr.section-card>
             <div class="space-y-5">
@@ -22,14 +33,14 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <x-hr.datepicker name="date" label="Date" :value="$date" />
+                    <x-hr.datepicker name="date" label="Date" :value="$date" :disabled="$locked" />
 
                     <div>
                         <label for="time" class="mb-1.5 block text-sm font-medium text-slate-700">Time</label>
                         <input
-                            type="time" id="time" wire:model="time"
+                            type="time" id="time" wire:model="time" @disabled($locked)
                             @class([
-                                'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2',
+                                'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500',
                                 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' => $errors->has('time'),
                                 'border-slate-300 focus:border-brand-teal focus:ring-brand-teal/20' => ! $errors->has('time'),
                             ])
@@ -45,11 +56,13 @@
                     <div class="inline-flex rounded-lg border border-slate-300 p-1">
                         @foreach (['Virtual', 'In Person'] as $option)
                             <button
-                                type="button" wire:click="$set('mode', '{{ $option }}')"
+                                type="button" wire:click="$set('mode', '{{ $option }}')" @disabled($locked)
                                 @class([
-                                    'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+                                    'rounded-md px-4 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed',
                                     'bg-brand-teal text-white' => $mode === $option,
-                                    'text-slate-600 hover:bg-slate-50' => $mode !== $option,
+                                    'text-slate-600' => $mode !== $option,
+                                    'hover:bg-slate-50' => $mode !== $option && ! $locked,
+                                    'opacity-60' => $locked,
                                 ])
                             >{{ $option }}</button>
                         @endforeach
@@ -68,13 +81,13 @@
                 @endif
 
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <x-hr.select2 name="interviewer" label="Interviewer" :options="$this->interviewers()" :value="$interviewer" placeholder="Select interviewer" />
-                    <x-hr.select name="status" label="Status" :options="$this->statuses()" placeholder="Select status" />
+                    <x-hr.select2 name="interviewer" label="Interviewer" :options="$this->interviewers()" :value="$interviewer" placeholder="Select interviewer" :disabled="$locked" />
+                    <x-hr.select name="status" label="Status" :options="$this->statuses()" placeholder="Select status" :disabled="$locked" />
                 </div>
 
                 <x-hr.textarea name="notes" label="Notes" placeholder="e.g. Please keep your resume handy..."
                     hint="Included in the email and calendar invite sent to the candidate — don't put internal comments here."
-                    hint-icon="mail" :rows="3" />
+                    hint-icon="mail" :rows="3" :disabled="$locked" />
 
                 <x-hr.textarea name="feedback" label="Feedback" placeholder="Interviewer's internal feedback..."
                     hint="Internal only — never included in the email or calendar invite." hint-icon="lock"
@@ -104,7 +117,7 @@
                     type="button" wire:click="createCalendarEvent"
                     class="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                     wire:loading.attr="disabled" wire:target="createCalendarEvent"
-                    @disabled(! $this->calendarConnected())
+                    @disabled($locked || ! $this->calendarConnected())
                 >
                     <span wire:loading.remove wire:target="createCalendarEvent">{{ $calendarStatus === 'Synced' ? 'Resync Event' : 'Add to Google Calendar' }}</span>
                     <span wire:loading wire:target="createCalendarEvent">Syncing...</span>
@@ -113,7 +126,7 @@
         </x-hr.section-card>
 
         <div class="mt-6 flex items-center justify-end gap-3">
-            <a href="{{ route('hr.candidates.show', $candidateId) }}" wire:navigate class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <a href="{{ $returnUrl }}" wire:navigate class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
                 Cancel
             </a>
             <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-brand-teal px-5 py-2 text-sm font-medium text-white hover:bg-brand-teal-dark disabled:opacity-60" wire:loading.attr="disabled" wire:target="updateRound">

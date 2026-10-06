@@ -11,7 +11,7 @@
         rows="{{ $rows }}"
         placeholder="{{ $placeholder }}"
         {{ $attributes->class([
-            'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2',
+            'w-full rounded-lg border px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500',
             'border-rose-300 focus:border-rose-400 focus:ring-rose-100' => $errors->has($name),
             'border-slate-300 focus:border-brand-teal focus:ring-brand-teal/20' => ! $errors->has($name),
         ]) }}

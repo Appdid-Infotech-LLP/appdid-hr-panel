@@ -1,4 +1,4 @@
-@props(['name', 'label' => null, 'value' => null, 'placeholder' => 'Select date', 'maxDate' => null])
+@props(['name', 'label' => null, 'value' => null, 'placeholder' => 'Select date', 'maxDate' => null, 'disabled' => false])
 
 @php
     $id = 'datepicker-' . str()->random(8);
@@ -22,7 +22,7 @@
     <div wire:ignore>
         <input
             type="text" id="{{ $id }}" placeholder="{{ $placeholder }}" autocomplete="off"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-teal focus:outline-none focus:ring-2 focus:ring-brand-teal/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
         >
 
         <script>
@@ -30,14 +30,22 @@
                 function init() {
                     const el = document.getElementById('{{ $id }}');
 
-                    window.flatpickr(el, {
+                    const disabled = @js((bool) $disabled);
+
+                    const picker = window.flatpickr(el, {
                         dateFormat: 'Y-m-d',
                         altInput: true,
                         altFormat: 'M j, Y',
                         defaultDate: @js($value),
                         maxDate: @js($maxDate),
+                        clickOpens: ! disabled,
                         onChange: (selectedDates, dateStr) => @this.set('{{ $name }}', dateStr),
                     });
+
+                    // With altInput, the visible field is flatpickr's copy, not `el`.
+                    if (disabled) {
+                        picker.altInput.disabled = true;
+                    }
                 }
 
                 if (window.flatpickr) {
