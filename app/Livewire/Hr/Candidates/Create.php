@@ -5,6 +5,7 @@ namespace App\Livewire\Hr\Candidates;
 use App\Helpers\FileUploader;
 use App\Models\Candidate;
 use App\Support\CandidateOptions;
+use App\Support\Url;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -229,6 +230,9 @@ class Create extends Component
 
     public function save()
     {
+        $this->linkedinUrl = (string) Url::withScheme($this->linkedinUrl);
+        $this->portfolioUrl = (string) Url::withScheme($this->portfolioUrl);
+
         $this->validate();
 
         // The resume only gets persisted to permanent storage here, at save

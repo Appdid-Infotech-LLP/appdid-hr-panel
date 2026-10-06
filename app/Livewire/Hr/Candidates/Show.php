@@ -3,6 +3,7 @@
 namespace App\Livewire\Hr\Candidates;
 
 use App\Models\Candidate;
+use App\Support\Url;
 use Livewire\Component;
 
 class Show extends Component
@@ -51,8 +52,8 @@ class Show extends Component
             'agreed_to_bond' => $c->agreed_to_bond,
             'expected_joining_date' => $c->expected_joining_date,
             'reason_for_leaving' => $c->reason_for_leaving,
-            'linkedin_url' => $c->linkedin_url,
-            'portfolio_url' => $c->portfolio_url,
+            'linkedin_url' => Url::withScheme($c->linkedin_url),
+            'portfolio_url' => Url::withScheme($c->portfolio_url),
             'resume_path' => $c->resume_path,
             'notes' => $c->notes,
             'stage' => $c->current_stage,

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Url;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\UploadedFile;
@@ -181,6 +182,12 @@ PROMPT
             }
 
             $data[$key] = $this->nullifyLiteral($value);
+        }
+
+        foreach (['linkedin_url', 'portfolio_url'] as $key) {
+            if (array_key_exists($key, $data)) {
+                $data[$key] = Url::withScheme($data[$key]);
+            }
         }
 
         return $data;
