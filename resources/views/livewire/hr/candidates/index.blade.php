@@ -162,7 +162,9 @@
 
                                             <div class="candidate-row-menu-panel fixed z-50 max-h-80 w-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
                                                 <button type="button" wire:click="scheduleRound({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Schedule Round</button>
+                                                {{-- Send Email — disabled for now
                                                 <button type="button" wire:click="sendEmail({{ $candidate['id'] }})" class="block w-full px-3.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Send Email</button>
+                                                --}}
                                                 <button
                                                     type="button" wire:click="reject({{ $candidate['id'] }})"
                                                     wire:confirm="Reject {{ $candidate['first_name'] }} {{ $candidate['last_name'] }}?"

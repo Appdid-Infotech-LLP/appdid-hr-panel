@@ -74,6 +74,7 @@
                     </svg>
                     Edit
                 </a>
+                {{-- Send Email — disabled for now
                 <button type="button" wire:click="sendEmail"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-brand-teal px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-teal-dark">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -83,6 +84,7 @@
                     </svg>
                     Send Email
                 </button>
+                --}}
             </div>
         </div>
     </div>
