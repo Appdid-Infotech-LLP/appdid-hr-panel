@@ -3,20 +3,23 @@
         <div>
             <h2 class="text-2xl font-semibold text-slate-900">Welcome back, {{ $greetingName }} 👋</h2>
             <p class="mt-1 text-sm text-slate-500">
-                @if ($monthLabel)
-                    Showing candidates added and rounds scheduled in <span class="font-medium text-slate-700">{{ $monthLabel }}</span>.
+                @if ($periodName)
+                    Showing candidates added and rounds scheduled in <span class="font-medium text-slate-700">{{ $periodName }}</span>.
                 @else
                     Here's what's happening with your recruitment pipeline today.
                 @endif
             </p>
         </div>
 
-        {{-- Scopes the entire dashboard; clearing it goes back to all time. --}}
-        <x-hr.select2 name="month" :options="$monthOptions" :value="$month" placeholder="All time" class="w-full sm:w-56" />
+        {{-- Scopes the entire dashboard: a year alone is the whole year; clearing the year goes back to all time. --}}
+        <div class="flex w-full gap-2 sm:w-auto">
+            <x-hr.select2 name="year" :options="$yearOptions" :value="$year" placeholder="All time" class="w-1/2 sm:w-32" />
+            <x-hr.select2 name="month" :options="$monthOptions" :value="$month" placeholder="All months" class="w-1/2 sm:w-40" />
+        </div>
     </div>
 
     {{-- Previous render stays visible (dimmed) while a new period loads. --}}
-    <div class="space-y-6 transition-opacity" wire:loading.class="opacity-60" wire:target="month, weeks">
+    <div class="space-y-6 transition-opacity" wire:loading.class="opacity-60" wire:target="year, month, weeks">
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         @foreach ($stats as $stat)
             <x-hr.stat-card :label="$stat['label']" :value="$stat['value']" :accent="$stat['accent']">
@@ -32,10 +35,10 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h3 class="text-base font-semibold text-slate-900">Analytics</h3>
-                <p class="text-xs text-slate-500">{{ $monthLabel ? 'Day by day through '.$monthLabel : 'Weekly trends for the selected period' }}</p>
+                <p class="text-xs text-slate-500">{{ $periodName ? ($bucketHeader === 'Month' ? 'Month by month through ' : 'Day by day through ').$periodName : 'Weekly trends for the selected period' }}</p>
             </div>
 
-            @if (! $monthLabel)
+            @if (! $periodName)
             <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-medium">
                 @foreach ($weekRanges as $range)
                     <button type="button" wire:click="$set('weeks', {{ $range }})" @class([
@@ -52,11 +55,11 @@
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <x-hr.section-card title="Candidates Added" :subtitle="$candidatesAddedTotal.' added '.$periodLabel">
-                <x-hr.chart.columns :columns="$candidatesPerBucket" :series="[['name' => 'Candidates added', 'color' => 'var(--color-brand-teal)']]" :first-header="$monthLabel ? 'Day' : 'Week'" />
+                <x-hr.chart.columns :columns="$candidatesPerBucket" :series="[['name' => 'Candidates added', 'color' => 'var(--color-brand-teal)']]" :first-header="$bucketHeader" />
             </x-hr.section-card>
 
             <x-hr.section-card title="Interviews by Round" :subtitle="$interviewsTotal.' rounds scheduled '.$periodLabel">
-                <x-hr.chart.columns :columns="$interviewsPerBucket" :series="$roundTypeSeries" :first-header="$monthLabel ? 'Day' : 'Week'" />
+                <x-hr.chart.columns :columns="$interviewsPerBucket" :series="$roundTypeSeries" :first-header="$bucketHeader" />
             </x-hr.section-card>
 
             <x-hr.section-card title="Round Outcomes" subtitle="Rounds in this period by current status">
@@ -71,7 +74,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
-            <x-hr.section-card title="Recruitment Funnel" :subtitle="$monthLabel ? 'Where candidates added in '.$monthLabel.' are now' : 'Candidates currently at each stage'">
+            <x-hr.section-card title="Recruitment Funnel" :subtitle="$periodName ? 'Where candidates added in '.$periodName.' are now' : 'Candidates currently at each stage'">
                 <div class="space-y-3">
                     @foreach ($funnel as $stage)
                         <div>
@@ -87,13 +90,13 @@
                 </div>
             </x-hr.section-card>
 
-            <x-hr.section-card :title="$monthLabel ? 'Interviews in '.$monthLabel : 'Upcoming Interviews'" :subtitle="$monthLabel ? 'Earliest rounds scheduled this month' : 'Next scheduled rounds across all candidates'">
+            <x-hr.section-card :title="$periodName ? 'Interviews in '.$periodName : 'Upcoming Interviews'" :subtitle="$periodName ? 'Earliest rounds scheduled in '.$periodName : 'Next scheduled rounds across all candidates'">
                 <x-slot:actions>
-                    <a href="{{ $monthRange ? route('hr.rounds.index', ['dateFrom' => $monthRange[0]->toDateString(), 'dateTo' => $monthRange[1]->toDateString()]) : route('hr.rounds.index') }}" wire:navigate class="text-xs font-medium text-brand-teal hover:underline">View all</a>
+                    <a href="{{ $periodRange ? route('hr.rounds.index', ['dateFrom' => $periodRange[0]->toDateString(), 'dateTo' => $periodRange[1]->toDateString()]) : route('hr.rounds.index') }}" wire:navigate class="text-xs font-medium text-brand-teal hover:underline">View all</a>
                 </x-slot:actions>
 
                 @if (empty($interviews))
-                    <p class="py-8 text-center text-sm text-slate-500">{{ $monthLabel ? 'No interviews scheduled in '.$monthLabel.'.' : 'No interviews scheduled yet.' }}</p>
+                    <p class="py-8 text-center text-sm text-slate-500">{{ $periodName ? 'No interviews scheduled in '.$periodName.'.' : 'No interviews scheduled yet.' }}</p>
                 @else
                     <div class="-mx-5 overflow-x-auto">
                         <table class="w-full min-w-160 text-left text-sm">
@@ -128,13 +131,13 @@
         </div>
 
         <div class="space-y-6">
-            <x-hr.section-card :title="$monthLabel ? 'Added in '.$monthLabel : 'Recent Candidates'">
+            <x-hr.section-card :title="$periodName ? 'Added in '.$periodName : 'Recent Candidates'">
                 <x-slot:actions>
                     <a href="{{ route('hr.candidates.index') }}" wire:navigate class="text-xs font-medium text-brand-teal hover:underline">View all</a>
                 </x-slot:actions>
 
                 @if (empty($recentCandidates))
-                    <p class="py-8 text-center text-sm text-slate-500">{{ $monthLabel ? 'No candidates added in '.$monthLabel.'.' : 'No candidates added yet.' }}</p>
+                    <p class="py-8 text-center text-sm text-slate-500">{{ $periodName ? 'No candidates added in '.$periodName.'.' : 'No candidates added yet.' }}</p>
                 @else
                     <ul class="divide-y divide-slate-100">
                         @foreach ($recentCandidates as $candidate)
@@ -153,9 +156,9 @@
                 @endif
             </x-hr.section-card>
 
-            <x-hr.section-card :title="$monthLabel ? 'Activity in '.$monthLabel : 'Recent Activity'">
+            <x-hr.section-card :title="$periodName ? 'Activity in '.$periodName : 'Recent Activity'">
                 @if (empty($recentActivity))
-                    <p class="py-8 text-center text-sm text-slate-500">{{ $monthLabel ? 'No activity in '.$monthLabel.'.' : 'No activity yet.' }}</p>
+                    <p class="py-8 text-center text-sm text-slate-500">{{ $periodName ? 'No activity in '.$periodName.'.' : 'No activity yet.' }}</p>
                 @else
                     <ul class="space-y-4">
                         @foreach ($recentActivity as $activity)

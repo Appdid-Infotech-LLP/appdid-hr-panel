@@ -7,7 +7,6 @@ use App\Enums\RoundType;
 use App\Models\Candidate;
 use App\Models\CandidateRound;
 use App\Support\RoundStatusResolver;
-use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -22,13 +21,18 @@ class Dashboard extends Component
 
     protected const WEEK_RANGES = [4, 12, 26];
 
-    protected const MAX_MONTH_OPTIONS = 24;
+    /** Years before the current one offered in the picker, even with no data in them. */
+    protected const PAST_YEARS = 5;
 
     /**
-     * "Y-m" to scope the whole dashboard to one month, or '' for all time.
-     * With a month picked, candidate figures cover candidates *added* that
-     * month and round figures cover rounds *scheduled* that month.
+     * Year ("2026") and month ("01"–"12") that scope the whole dashboard.
+     * A year alone covers that whole year; both blank is all time. With a
+     * period picked, candidate figures cover candidates *added* in it and
+     * round figures cover rounds *scheduled* in it.
      */
+    #[Url]
+    public string $year = '';
+
     #[Url]
     public string $month = '';
 
@@ -36,56 +40,91 @@ class Dashboard extends Component
     #[Url]
     public int $weeks = 12;
 
+    public function mount(): void
+    {
+        // Older links carried the period as a single ?month=Y-m.
+        if (preg_match('/^(\d{4})-(\d{2})$/', $this->month, $matches)) {
+            [, $this->year, $this->month] = $matches;
+        }
+    }
+
+    /** Picking a month with no year means that month this year. */
+    public function updatedMonth(): void
+    {
+        if ($this->month !== '' && $this->year === '') {
+            $this->year = (string) now()->year;
+        }
+    }
+
+    /** Clearing the year goes back to all time. */
+    public function updatedYear(): void
+    {
+        if ($this->year === '') {
+            $this->month = '';
+        }
+    }
+
     /**
-     * The picked month's [start, end], or null for all time. A hand-edited
-     * ?month= that isn't a real Y-m falls back to all time.
+     * The picked period's [start, end], or null for all time. A hand-edited
+     * year that isn't real falls back to all time, a bad month to the year.
      *
      * @return array{Carbon, Carbon}|null
      */
-    protected function monthRange(): ?array
+    protected function periodRange(): ?array
     {
-        if ($this->month === '') {
-            return null;
-        }
-
-        try {
-            $start = Carbon::createFromFormat('!Y-m', $this->month);
-        } catch (InvalidFormatException) {
-            $start = null;
-        }
-
-        if (! $start || $start->format('Y-m') !== $this->month) {
+        if (! preg_match('/^\d{4}$/', $this->year)) {
+            $this->year = '';
             $this->month = '';
 
             return null;
         }
 
-        return [$start->copy()->startOfMonth(), $start->copy()->endOfMonth()];
+        if (! array_key_exists($this->month, $this->monthOptions())) {
+            $this->month = '';
+        }
+
+        if ($this->month === '') {
+            $start = Carbon::create((int) $this->year)->startOfYear();
+
+            return [$start, $start->copy()->endOfYear()];
+        }
+
+        $start = Carbon::create((int) $this->year, (int) $this->month)->startOfMonth();
+
+        return [$start, $start->copy()->endOfMonth()];
     }
 
     /**
-     * Months from the earliest candidate/round up to whichever is later of
-     * now or the last scheduled round, newest first.
+     * Every year from whichever is earlier of the first candidate/round or
+     * PAST_YEARS ago, up to whichever is later of now or the last scheduled
+     * round, newest first.
      *
-     * @return array<string, string> Y-m => "October 2026"
+     * @return array<string, string>
      */
-    protected function monthOptions(): array
+    protected function yearOptions(): array
     {
         $earliest = collect([Candidate::min('created_at'), CandidateRound::min('schedule_at')])
             ->filter()
-            ->map(fn (string $date): Carbon => Carbon::parse($date))
-            ->min() ?? now();
+            ->map(fn (string $date): int => Carbon::parse($date)->year)
+            ->push(now()->year - self::PAST_YEARS)
+            ->min();
 
         $lastRound = CandidateRound::max('schedule_at');
-        $latest = $lastRound ? Carbon::parse($lastRound)->max(now()) : now();
+        $latest = max(now()->year, $lastRound ? Carbon::parse($lastRound)->year : 0);
 
-        $options = [];
+        return collect(range($latest, $earliest))
+            ->mapWithKeys(fn (int $year): array => [(string) $year => (string) $year])
+            ->all();
+    }
 
-        for ($month = $latest->copy()->startOfMonth(); $month->gte($earliest->copy()->startOfMonth()) && count($options) < self::MAX_MONTH_OPTIONS; $month->subMonth()) {
-            $options[$month->format('Y-m')] = $month->format('F Y');
-        }
-
-        return $options;
+    /**
+     * @return array<string, string> "01" => "January"
+     */
+    protected function monthOptions(): array
+    {
+        return collect(range(1, 12))
+            ->mapWithKeys(fn (int $month): array => [sprintf('%02d', $month) => Carbon::create(2000, $month)->format('F')])
+            ->all();
     }
 
     /**
@@ -263,14 +302,30 @@ class Dashboard extends Component
 
     /**
      * What the analytics charts span and how they're bucketed: a picked
-     * month is shown day by day; all time is the last $weeks weeks
-     * (Monday-based, including the current one), week by week.
+     * year is shown month by month, a picked month day by day; all time is
+     * the last $weeks weeks (Monday-based, including the current one),
+     * week by week.
      *
      * @param  array{Carbon, Carbon}|null  $range
      * @return array{start: Carbon, end: Carbon, buckets: Collection<string, array{label: string, title: string}>, key: \Closure(Carbon): string}
      */
     protected function chartWindow(?array $range): array
     {
+        if ($range && $this->month === '') {
+            [$start, $end] = $range;
+
+            return [
+                'start' => $start,
+                'end' => $end,
+                'buckets' => collect(range(0, 11))->mapWithKeys(function (int $offset) use ($start): array {
+                    $month = $start->copy()->addMonths($offset);
+
+                    return [$month->format('Y-m') => ['label' => $month->format('M'), 'title' => $month->format('F Y')]];
+                }),
+                'key' => fn (Carbon $at): string => $at->format('Y-m'),
+            ];
+        }
+
         if ($range) {
             [$start, $end] = $range;
 
@@ -421,7 +476,8 @@ class Dashboard extends Component
 
     public function render()
     {
-        $range = $this->monthRange();
+        $range = $this->periodRange();
+        $periodName = $range ? ($this->month === '' ? $this->year : $range[0]->format('F Y')) : null;
         $stageCounts = $this->stageCounts($range);
         $window = $this->chartWindow($range);
 
@@ -431,10 +487,16 @@ class Dashboard extends Component
 
         return view('livewire.hr.dashboard', [
             'greetingName' => strtok(trim((string) auth()->user()?->name), ' ') ?: 'HR',
+            'yearOptions' => $this->yearOptions(),
             'monthOptions' => $this->monthOptions(),
-            'monthLabel' => $range ? $range[0]->format('F Y') : null,
-            'monthRange' => $range,
-            'periodLabel' => $range ? 'in '.$range[0]->format('F Y') : "in the last {$this->weeks} weeks",
+            'periodName' => $periodName,
+            'periodRange' => $range,
+            'periodLabel' => $range ? "in {$periodName}" : "in the last {$this->weeks} weeks",
+            'bucketHeader' => match (true) {
+                ! $range => 'Week',
+                $this->month === '' => 'Month',
+                default => 'Day',
+            },
             'weekRanges' => self::WEEK_RANGES,
             'stats' => $this->stats($stageCounts, (bool) $range),
             'funnel' => $this->funnel($stageCounts),
