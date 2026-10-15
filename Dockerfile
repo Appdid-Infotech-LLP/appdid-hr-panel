@@ -110,4 +110,4 @@ EOF
 EXPOSE 80
 
 
-CMD ["sh", "-c", "php artisan migrate --force --no-interaction && php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
